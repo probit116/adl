@@ -286,6 +286,17 @@
       outline:none;
     }
     .field input::placeholder{color:rgba(142,164,193,.75)}
+    .field--actions{
+      display:flex;
+      flex-direction:column;
+      justify-content:flex-end;
+    }
+    .field-hint{
+      margin-top:8px;
+      color:var(--muted);
+      font-size:11px;
+      line-height:1.6;
+    }
     .button-group{display:flex; gap:10px; flex-wrap:wrap}
     .button{
       height:42px;
@@ -374,6 +385,155 @@
       font-size:12px;
     }
     .page-chip:disabled{opacity:.45; cursor:not-allowed}
+
+    .pc-hero{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:16px;
+      padding:18px;
+      margin-bottom:14px;
+      border-radius:var(--radius-lg);
+      border:1px solid rgba(86,167,255,.16);
+      background:
+        linear-gradient(135deg, rgba(86,167,255,.14), rgba(46,211,161,.06)),
+        rgba(255,255,255,.03);
+    }
+    .pc-hero h3{
+      margin:6px 0 8px;
+      font-size:20px;
+    }
+    .pc-hero p{
+      margin:0;
+      max-width:720px;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.8;
+    }
+    .pc-hero-badges{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+    .pc-hero-badges .tag{
+      height:26px;
+      padding:0 12px;
+      background:rgba(255,255,255,.06);
+    }
+    .pc-hero-actions{
+      display:flex;
+      flex-direction:column;
+      align-items:flex-end;
+      gap:10px;
+      min-width:220px;
+    }
+    .pc-hero-tip{
+      color:var(--muted);
+      font-size:11px;
+      line-height:1.7;
+      text-align:right;
+    }
+    .pc-kpi-strip{
+      display:grid;
+      grid-template-columns:repeat(4, minmax(0,1fr));
+      gap:12px;
+      margin-bottom:14px;
+    }
+    .pc-kpi{
+      padding:14px 16px;
+      border-radius:var(--radius-md);
+      border:1px solid rgba(148,163,184,.14);
+      background:rgba(255,255,255,.03);
+      min-height:88px;
+    }
+    .pc-kpi small{
+      display:block;
+      color:var(--muted);
+      font-size:12px;
+      margin-bottom:10px;
+    }
+    .pc-kpi strong{
+      display:block;
+      font-size:20px;
+      letter-spacing:.01em;
+    }
+    .pc-kpi span{
+      display:block;
+      margin-top:8px;
+      color:#dbe7f3;
+      font-size:12px;
+      line-height:1.6;
+    }
+    .pc-filter-panel{
+      grid-template-columns:minmax(220px, 1.3fr) minmax(180px, .9fr) minmax(220px, 1fr);
+      align-items:end;
+      margin-bottom:12px;
+    }
+    .pc-table-wrap{
+      overflow:auto;
+      background:rgba(255,255,255,.025);
+    }
+    .pc-table-wrap table{
+      min-width:1320px;
+    }
+    .pc-table-wrap thead th{
+      background:rgba(255,255,255,.02);
+      position:sticky;
+      top:0;
+      z-index:1;
+    }
+    .pc-pair-cell strong,
+    .pc-metric strong,
+    .pc-stat strong{
+      display:block;
+      font-size:14px;
+      line-height:1.45;
+      color:#f3f8ff;
+    }
+    .pc-pair-cell span,
+    .pc-metric span,
+    .pc-stat span,
+    .pc-risk-meta span,
+    .pc-status-cell span{
+      display:block;
+      margin-top:4px;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.6;
+    }
+    .pc-strategy{
+      display:grid;
+      gap:8px;
+    }
+    .pc-strategy .tag{
+      width:max-content;
+    }
+    .pc-risk-meta{
+      display:grid;
+      gap:4px;
+    }
+    .pc-stat strong.text-ok,
+    .pc-metric strong.text-ok{
+      color:var(--ok);
+    }
+    .pc-stat strong.text-danger,
+    .pc-metric strong.text-danger{
+      color:var(--danger);
+    }
+    .pc-status-cell{
+      display:grid;
+      gap:8px;
+    }
+    .pc-action-group{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+    .pc-action-group .button{
+      height:36px;
+      padding:0 12px;
+    }
 
     .tabs{
       display:flex;
@@ -539,6 +699,8 @@
       font-size:12px;
       line-height:1.6;
     }
+    .error-text.warn{color:#ffd8aa}
+    .error-text.ok{color:#a7ffe6}
     .formula-box{
       padding:12px;
       border-radius:12px;
@@ -599,6 +761,11 @@
       .overview-grid{grid-template-columns:repeat(2, minmax(0,1fr))}
       .field-grid{grid-template-columns:repeat(2, minmax(0,1fr))}
       .detail-grid{grid-template-columns:repeat(2, minmax(0,1fr))}
+      .pc-kpi-strip{grid-template-columns:repeat(2, minmax(0,1fr))}
+      .pc-filter-panel{grid-template-columns:repeat(2, minmax(0,1fr))}
+      .pc-hero{flex-direction:column}
+      .pc-hero-actions{align-items:flex-start; min-width:0}
+      .pc-hero-tip{text-align:left}
     }
     @media (max-width: 640px){
       .overview-grid{grid-template-columns:1fr}
@@ -606,6 +773,7 @@
       .detail-grid{grid-template-columns:1fr}
       .modal-grid{grid-template-columns:1fr}
       .inline-input{grid-template-columns:1fr}
+      .pc-kpi-strip{grid-template-columns:1fr}
     }
   </style>
 </head>
@@ -670,20 +838,31 @@
 
       <section id="pair-config" class="page active">
         <div class="section-card">
-          <div class="section-head">
+          <div class="pc-hero">
             <div>
               <div class="breadcrumb"><span>后台</span><span>›</span><span>ADL减仓</span><span>›</span><b>币对配置</b></div>
               <h3>ADL（自动减仓）币对配置</h3>
+              <p>统一管理币对级风险阈值、破产价偏移和单次减仓策略。页面按“概览卡片、筛选、列表”分层展示，便于快速识别高风险币对并进入后续操作。</p>
+              <div class="pc-hero-badges">
+                <span class="tag">风险阈值</span>
+                <span class="tag">方向亏损展示</span>
+                <span class="tag">单次减仓策略</span>
+                <span class="tag">状态预警</span>
+              </div>
             </div>
-            <div class="button-group">
+            <div class="pc-hero-actions">
               <button type="button" class="button success" id="add-config">添加币对配置</button>
+              <div class="pc-hero-tip">建议先通过筛选定位目标币对，再进入编辑或查看币对持仓用户。</div>
             </div>
           </div>
 
-          <div class="field-grid">
+          <div class="pc-kpi-strip" id="pc-kpi-strip"></div>
+
+          <div class="field-grid pc-filter-panel">
             <div class="field">
               <label>搜索币对</label>
               <input id="pc-filter-key" type="text" placeholder="例如 BTC/USDT" />
+              <div class="field-hint">支持按币对关键字模糊匹配</div>
             </div>
             <div class="field">
               <label>状态</label>
@@ -692,17 +871,19 @@
                 <option value="warn">风险预警</option>
                 <option value="ok">正常</option>
               </select>
+              <div class="field-hint">用于快速定位预警中的币对</div>
             </div>
-            <div class="field">
-              <label>操作</label>
+            <div class="field field--actions">
+              <label>筛选操作</label>
               <div class="button-group">
                 <button type="button" class="button" id="pc-apply">查询</button>
                 <button type="button" class="button secondary" id="pc-reset">重置</button>
               </div>
+              <div class="field-hint">查询后列表回到第一页，重置恢复默认筛选</div>
             </div>
           </div>
 
-          <div class="table-wrap">
+          <div class="table-wrap pc-table-wrap">
             <table>
               <thead>
                 <tr>
@@ -1105,6 +1286,15 @@
       </ol>
     </div>
     <div class="spec-card">
+      <strong>ADL异常处理总则</strong>
+      <ol>
+        <li>自动ADL与手动ADL在执行前，均需校验当前持仓状态、是否存在挂单以及剩余可平部分是否满足本次ADL执行要求。</li>
+        <li>若用户持仓存在挂单，且剩余可平部分小于“持仓数量 × 币对配置中的单次减仓比例”对应结果，则需先撤销该用户相关挂单，再继续执行ADL。</li>
+        <li>若当前持仓状态为“已完成”，则该持仓不可继续ADL；自动ADL应跳过当前候选持仓并顺延下一名，手动ADL应直接提示用户不可执行。</li>
+        <li>持仓状态、挂单状态、剩余可平部分、最小开仓数量等执行前校验字段，均以后端实时返回结果为准。</li>
+      </ol>
+    </div>
+    <div class="spec-card">
       <strong>顶部统计维度（日 / 周 / 月 / 总）</strong>
       <ol>
         <li>顶部“日 / 周 / 月 / 总”为全局统计维度切换项，默认选中“日”。</li>
@@ -1367,6 +1557,16 @@
         </ol>
       </div>
       <div class="spec-card">
+        <strong>自动ADL异常处理</strong>
+        <ol>
+          <li>自动ADL先按当前优先方向和综合排序值，从高到低选择候选用户。</li>
+          <li>若候选用户存在挂单，且剩余可平部分小于“持仓数量 × 币对配置中的单次减仓比例”对应结果，则系统需先撤销该用户相关挂单，再继续执行自动ADL。</li>
+          <li>若当前候选持仓状态为“已完成”，则视为本次候选无效，系统自动顺延排序第二名、第三名，直到自动ADL成功或当前候选池耗尽。</li>
+          <li>自动ADL成功后，系统需再次按最新亏损方向、最新分数排名和最新候选持仓结果，判断是否需要执行第二次自动ADL，以及下一次应执行的方向和候选用户。</li>
+          <li>上述顺延、撤单、二次判断逻辑均属于执行链路处理，不改变分数公式本身；成功落库的“ADL时排序值”仅记录实际执行成功的那一名用户。</li>
+        </ol>
+      </div>
+      <div class="spec-card">
         <strong>操作-用户详情</strong>
         <ol>
           <li>点击“用户详情”后，页面跳转至“用户详情”页。</li>
@@ -1384,6 +1584,8 @@
           <li>破产价为可输入字段；其余展示字段按当前持仓数据回填。</li>
           <li>当前价、持仓数量、持仓方向、持仓均价以后端币对配置与后端持仓结果为准。</li>
           <li>平仓后用户盈亏显示实时联动计算：多仓按（破产价 - 持仓均价）× 平仓数量；空仓按（持仓均价 - 破产价）× 平仓数量。</li>
+          <li>若当前持仓存在挂单，且剩余可平部分小于“持仓数量 × 币对配置中的单次减仓比例”对应结果，则手动ADL确认时需先撤销该用户挂单，再继续执行ADL。</li>
+          <li>若当前持仓状态为“已完成”，则前端直接提示“此持仓状态为已完成，不可ADL”，不再打开或执行手动ADL。</li>
           <li>确认成功后，更新持仓用户列表、减仓列表、ADL当前用户列表和用户详情演示数据。</li>
         </ol>
       </div>
@@ -1393,6 +1595,7 @@
           <li>破产价：支持输入大于 0 的价格值，最多 2 位小数，作为本次手动 ADL 的价格输入参与盈亏计算。</li>
           <li>平仓数量：支持输入大于 0 且不大于当前持仓数量的数值。</li>
           <li>谷歌验证码：仅支持 6 位纯数字，输入不满足规则时确认失败。</li>
+          <li>若校验到挂单导致剩余可平部分不足，系统先执行撤单，再继续执行本次手动ADL；若撤单后仍不满足执行条件，则提示失败且不落库。</li>
           <li>点击“确认”后，若输入合法，则刷新持仓用户列表、减仓列表、ADL当前用户列表与用户详情；若输入不合法，则前端提示错误信息且不更新结果。</li>
         </ol>
       </div>
@@ -1591,7 +1794,7 @@
           <li>本列表展示该用户当前所有币对持仓。</li>
           <li>字段包括：交易对、保证金模式、持仓方向、持仓数量、开仓均价、标记价格、未实现盈亏、杠杆、最后更新时间、操作。</li>
           <li>保证金模式取值为“全仓 / 逐仓”，杠杆取值以后端持仓返回结果为准。</li>
-          <li>操作中的“手动ADL减仓”直接打开对应持仓的手动ADL减仓弹窗。</li>
+          <li>操作中的“手动ADL减仓”直接打开对应持仓的手动ADL减仓弹窗；若当前持仓状态为“已完成”，则提示用户不可ADL。</li>
           <li>列表默认按最后更新时间倒序展示；若相同，则按交易对倒序展示。</li>
         </ol>
       </div>
@@ -1629,7 +1832,7 @@
       <div class="spec-card">
         <strong>订单状态 / 手续费</strong>
         <ol>
-          <li>订单状态：表示该减仓订单当前处理结果，原型演示中可展示为“已完成 / 处理中 / 已取消”等枚举值，实际取值以后端订单状态返回为准。</li>
+          <li>订单状态：表示该减仓订单当前处理结果，原型演示中可展示为“已完成 / 撤单后已完成 / 处理中 / 已取消”等枚举值，实际取值以后端订单状态返回为准。</li>
           <li>手续费：表示对应成交记录产生的手续费金额，单位为 USDT，最多展示 8 位小数，末尾为 0 的小数位不展示。</li>
         </ol>
       </div>
@@ -1771,6 +1974,7 @@
       const pcApply = document.getElementById('pc-apply');
       const pcReset = document.getElementById('pc-reset');
       const pcTbody = document.getElementById('pc-tbody');
+      const pcKpiStrip = document.getElementById('pc-kpi-strip');
       const pcSummary = document.getElementById('pc-summary');
       const pcPrev = document.getElementById('pc-prev');
       const pcNext = document.getElementById('pc-next');
@@ -1957,16 +2161,16 @@
       const manualGoogleDemoCode = '624981';
 
       const pairPositions = [
-        { pair: 'BTC/USDT', userId: '10001', account: 'user_btc_001', marginMode: '全仓', side: '多仓', valueU: 120000, entryPrice: 63500, markPrice: 67480, upnl: 12600, leverage: 20, walletBalance: 18400, adl30dCount: 3, adl30dAmount: 28500, updatedAt: '2025-07-15 14:32:10' },
-        { pair: 'BTC/USDT', userId: '10006', account: 'user_btc_006', marginMode: '逐仓', side: '空仓', valueU: 54000, entryPrice: 68220, markPrice: 67480, upnl: 980, leverage: 10, walletBalance: 6200, adl30dCount: 1, adl30dAmount: 3600, updatedAt: '2025-07-15 13:11:42' },
-        { pair: 'BTC/USDT', userId: '10008', account: 'user_btc_008', marginMode: '全仓', side: '多仓', valueU: 86000, entryPrice: 66110, markPrice: 67480, upnl: 1780, leverage: 25, walletBalance: 9800, adl30dCount: 0, adl30dAmount: 0, updatedAt: '2025-07-15 12:06:08' },
-        { pair: 'ETH/USDT', userId: '20001', account: 'user_eth_001', marginMode: '逐仓', side: '多仓', valueU: 42000, entryPrice: 3150, markPrice: 3288, upnl: 1680, leverage: 15, walletBalance: 9200, adl30dCount: 2, adl30dAmount: 15200, updatedAt: '2025-07-15 10:12:09' },
-        { pair: 'BNB/USDT', userId: '30001', account: 'user_bnb_001', marginMode: '全仓', side: '空仓', valueU: 28000, entryPrice: 590, markPrice: 575, upnl: 720, leverage: 8, walletBalance: 7800, adl30dCount: 2, adl30dAmount: 8300, updatedAt: '2025-07-14 18:26:10' },
-        { pair: 'SOL/USDT', userId: '60001', account: 'user_sol_001', marginMode: '逐仓', side: '多仓', valueU: 19000, entryPrice: 148, markPrice: 152, upnl: 480, leverage: 12, walletBalance: 4100, adl30dCount: 0, adl30dAmount: 0, updatedAt: '2025-07-15 09:01:30' },
-        { pair: 'DOGE/USDT', userId: '40001', account: 'user_doge_001', marginMode: '全仓', side: '多仓', valueU: 15000, entryPrice: 0.165, markPrice: 0.171, upnl: 540, leverage: 20, walletBalance: 3400, adl30dCount: 1, adl30dAmount: 4200, updatedAt: '2025-07-15 08:18:00' },
-        { pair: 'TON/USDT', userId: '50001', account: 'user_ton_001', marginMode: '逐仓', side: '多仓', valueU: 23000, entryPrice: 7.12, markPrice: 7.55, upnl: 1380, leverage: 10, walletBalance: 6200, adl30dCount: 1, adl30dAmount: 6800, updatedAt: '2025-07-15 11:42:20' },
-        { pair: 'BTC/USDT', userId: '10009', account: 'user_btc_009', marginMode: '逐仓', side: '多仓', valueU: 46000, entryPrice: 66830, markPrice: 67480, upnl: 450, leverage: 5, walletBalance: 11600, adl30dCount: 0, adl30dAmount: 0, updatedAt: '2025-07-15 15:01:14' },
-        { pair: 'ETH/USDT', userId: '20008', account: 'user_eth_008', marginMode: '全仓', side: '空仓', valueU: 26000, entryPrice: 3320, markPrice: 3288, upnl: 250, leverage: 6, walletBalance: 5800, adl30dCount: 0, adl30dAmount: 0, updatedAt: '2025-07-15 10:44:51' }
+        { pair: 'BTC/USDT', userId: '10001', account: 'user_btc_001', marginMode: '全仓', side: '多仓', valueU: 120000, entryPrice: 63500, markPrice: 67480, upnl: 12600, leverage: 20, walletBalance: 18400, adl30dCount: 3, adl30dAmount: 28500, positionStatus: '持仓中', orderStatus: '无挂单', openOrderCount: 0, openOrderQty: 0, availableCloseQty: 120000, updatedAt: '2025-07-15 14:32:10' },
+        { pair: 'BTC/USDT', userId: '10006', account: 'user_btc_006', marginMode: '逐仓', side: '空仓', valueU: 54000, entryPrice: 68220, markPrice: 67480, upnl: 980, leverage: 10, walletBalance: 6200, adl30dCount: 1, adl30dAmount: 3600, positionStatus: '持仓中', orderStatus: '挂单中', openOrderCount: 2, openOrderQty: 18000, availableCloseQty: 36000, updatedAt: '2025-07-15 13:11:42' },
+        { pair: 'BTC/USDT', userId: '10008', account: 'user_btc_008', marginMode: '全仓', side: '多仓', valueU: 86000, entryPrice: 66110, markPrice: 67480, upnl: 1780, leverage: 25, walletBalance: 9800, adl30dCount: 0, adl30dAmount: 0, positionStatus: '持仓中', orderStatus: '无挂单', openOrderCount: 0, openOrderQty: 0, availableCloseQty: 86000, updatedAt: '2025-07-15 12:06:08' },
+        { pair: 'ETH/USDT', userId: '20001', account: 'user_eth_001', marginMode: '逐仓', side: '多仓', valueU: 42000, entryPrice: 3150, markPrice: 3288, upnl: 1680, leverage: 15, walletBalance: 9200, adl30dCount: 2, adl30dAmount: 15200, positionStatus: '持仓中', orderStatus: '挂单中', openOrderCount: 1, openOrderQty: 6000, availableCloseQty: 36000, updatedAt: '2025-07-15 10:12:09' },
+        { pair: 'BNB/USDT', userId: '30001', account: 'user_bnb_001', marginMode: '全仓', side: '空仓', valueU: 28000, entryPrice: 590, markPrice: 575, upnl: 720, leverage: 8, walletBalance: 7800, adl30dCount: 2, adl30dAmount: 8300, positionStatus: '持仓中', orderStatus: '无挂单', openOrderCount: 0, openOrderQty: 0, availableCloseQty: 28000, updatedAt: '2025-07-14 18:26:10' },
+        { pair: 'SOL/USDT', userId: '60001', account: 'user_sol_001', marginMode: '逐仓', side: '多仓', valueU: 19000, entryPrice: 148, markPrice: 152, upnl: 480, leverage: 12, walletBalance: 4100, adl30dCount: 0, adl30dAmount: 0, positionStatus: '持仓中', orderStatus: '无挂单', openOrderCount: 0, openOrderQty: 0, availableCloseQty: 19000, updatedAt: '2025-07-15 09:01:30' },
+        { pair: 'DOGE/USDT', userId: '40001', account: 'user_doge_001', marginMode: '全仓', side: '多仓', valueU: 15000, entryPrice: 0.165, markPrice: 0.171, upnl: 540, leverage: 20, walletBalance: 3400, adl30dCount: 1, adl30dAmount: 4200, positionStatus: '持仓中', orderStatus: '无挂单', openOrderCount: 0, openOrderQty: 0, availableCloseQty: 15000, updatedAt: '2025-07-15 08:18:00' },
+        { pair: 'TON/USDT', userId: '50001', account: 'user_ton_001', marginMode: '逐仓', side: '多仓', valueU: 23000, entryPrice: 7.12, markPrice: 7.55, upnl: 1380, leverage: 10, walletBalance: 6200, adl30dCount: 1, adl30dAmount: 6800, positionStatus: '持仓中', orderStatus: '无挂单', openOrderCount: 0, openOrderQty: 0, availableCloseQty: 23000, updatedAt: '2025-07-15 11:42:20' },
+        { pair: 'BTC/USDT', userId: '10009', account: 'user_btc_009', marginMode: '逐仓', side: '多仓', valueU: 46000, entryPrice: 66830, markPrice: 67480, upnl: 450, leverage: 5, walletBalance: 11600, adl30dCount: 0, adl30dAmount: 0, positionStatus: '持仓中', orderStatus: '无挂单', openOrderCount: 0, openOrderQty: 0, availableCloseQty: 46000, updatedAt: '2025-07-15 15:01:14' },
+        { pair: 'ETH/USDT', userId: '20008', account: 'user_eth_008', marginMode: '全仓', side: '空仓', valueU: 26000, entryPrice: 3320, markPrice: 3288, upnl: 250, leverage: 6, walletBalance: 5800, adl30dCount: 0, adl30dAmount: 0, positionStatus: '持仓中', orderStatus: '无挂单', openOrderCount: 0, openOrderQty: 0, availableCloseQty: 26000, updatedAt: '2025-07-15 10:44:51' }
       ];
 
       function fmtNum(value) {
@@ -2299,7 +2503,26 @@
         if (state.pcPage > totalPages) state.pcPage = totalPages;
         const start = (state.pcPage - 1) * pageSize;
         const pageList = list.slice(start, start + pageSize);
+        const warnCount = list.filter(function (item) { return item.status === 'warn'; }).length;
+        const ratioCount = list.filter(function (item) { return item.singleReduceMode === 'ratio'; }).length;
+        const totalAdlCount = list.reduce(function (acc, item) { return acc + (Number(item.adlCount) || 0); }, 0);
+        const totalPnl = list.reduce(function (acc, item) { return acc + (Number(item.pnl) || 0); }, 0);
+        const totalPnlClass = totalPnl >= 0 ? 'text-ok' : 'text-danger';
 
+        pcKpiStrip.innerHTML = [
+          { label: '当前筛选币对数', value: String(list.length), desc: '筛选后展示的币对配置数量' },
+          { label: '风险预警币对', value: String(warnCount), desc: '状态为风险预警的币对数量' },
+          { label: '按比例减仓策略', value: String(ratioCount), desc: '单次减仓策略为按比例的币对数' },
+          { label: '累计ADL盈余总盈亏', value: (totalPnl >= 0 ? '+' : '') + fmtNum(totalPnl) + ' USDT', desc: '当前筛选币对的累计ADL盈亏，减仓次数 ' + totalAdlCount, className: totalPnlClass }
+        ].map(function (item) {
+          return (
+            '<div class="pc-kpi">' +
+              '<small>' + item.label + '</small>' +
+              '<strong class="' + (item.className || '') + '">' + item.value + '</strong>' +
+              '<span>' + item.desc + '</span>' +
+            '</div>'
+          );
+        }).join('');
         pcSummary.textContent = '当前展示 ' + list.length + ' 条币对配置';
         pcPage.textContent = '第 ' + state.pcPage + ' 页 / 共 ' + totalPages + ' 页';
         pcPrev.disabled = state.pcPage === 1;
@@ -2315,18 +2538,21 @@
           const singleReduceText = row.singleReduceMode === 'ratio'
             ? '按比例(' + fmtNum(row.singleReduceRatio) + '%)'
             : '全部';
+          const cycleLabelMap = { day: '日', week: '周', month: '月', total: '总' };
+          const cycleLabel = cycleLabelMap[row.cycle] || '日';
+          const priorityDirection = getPriorityAdlDirection(row);
           return (
             '<tr>' +
-              '<td>' + row.pair + '</td>' +
-              '<td>' + fmtNum(row.maxPlatformLoss) + '</td>' +
-              '<td>' + singleReduceText + '</td>' +
-              '<td class="text-danger">' + fmtNum(row.currentLongLoss) + '</td>' +
-              '<td class="text-danger">' + fmtNum(row.currentShortLoss) + '</td>' +
-              '<td>' + String(row.adlCount) + '</td>' +
-              '<td class="' + pnlClass + '">' + pnlText + '</td>' +
-              '<td>' + statusTag + '</td>' +
+              '<td><div class="pc-pair-cell"><strong>' + row.pair + '</strong><span>统计周期：' + cycleLabel + '</span></div></td>' +
+              '<td><div class="pc-metric"><strong>' + fmtNum(row.maxPlatformLoss) + '</strong><span>平台总亏损阈值</span></div></td>' +
+              '<td><div class="pc-strategy"><span class="tag">' + singleReduceText + '</span><span>偏移比例：多 ' + fmtNum(row.longBankruptcyOffset) + '% / 空 ' + fmtNum(row.shortBankruptcyOffset) + '%</span></div></td>' +
+              '<td><div class="pc-metric"><strong class="text-danger">' + fmtNum(row.currentLongLoss) + '</strong><span>多仓方向当前亏损</span></div></td>' +
+              '<td><div class="pc-metric"><strong class="text-danger">' + fmtNum(row.currentShortLoss) + '</strong><span>空仓方向当前亏损</span></div></td>' +
+              '<td><div class="pc-stat"><strong>' + String(row.adlCount) + '</strong><span>当前周期已触发次数</span></div></td>' +
+              '<td><div class="pc-stat"><strong class="' + pnlClass + '">' + pnlText + '</strong><span>当前周期累计ADL盈亏</span></div></td>' +
+              '<td><div class="pc-status-cell">' + statusTag + '<span>优先处理方向：' + priorityDirection + '</span></div></td>' +
               '<td>' +
-                '<div class="button-group">' +
+                '<div class="pc-action-group">' +
                   '<button type="button" class="button secondary pc-edit" data-pair="' + row.pair + '">编辑</button>' +
                   '<button type="button" class="button secondary pc-users" data-pair="' + row.pair + '">币对持仓用户</button>' +
                   '<button type="button" class="button pc-view" data-pair="' + row.pair + '">减仓详情</button>' +
@@ -3005,6 +3231,102 @@
         return qty * delta;
       }
 
+      function setManualMessage(text, type) {
+        mamError.textContent = text || '';
+        mamError.classList.toggle('warn', type === 'warn');
+        mamError.classList.toggle('ok', type === 'ok');
+      }
+
+      function getPairConfigByPair(pair) {
+        return pairConfigs.find(function (item) {
+          return item.pair === pair;
+        });
+      }
+
+      function getPositionTotalQty(position) {
+        return Math.max(0, Number(position && position.valueU) || 0);
+      }
+
+      function getPositionAvailableCloseQty(position) {
+        const totalQty = getPositionTotalQty(position);
+        const available = Number(position && position.availableCloseQty);
+        if (!Number.isFinite(available)) return totalQty;
+        return Math.max(0, Math.min(totalQty, available));
+      }
+
+      function hasOpenOrders(position) {
+        return position && (
+          position.orderStatus === '挂单中' ||
+          (Number(position.openOrderCount) || 0) > 0 ||
+          (Number(position.openOrderQty) || 0) > 0
+        );
+      }
+
+      function getConfiguredReduceQty(position) {
+        const totalQty = getPositionTotalQty(position);
+        const config = getPairConfigByPair(position && position.pair);
+        if (!config || config.singleReduceMode !== 'ratio') return totalQty;
+        const ratio = Math.max(0, Number(config.singleReduceRatio) || 0);
+        return Math.min(totalQty, totalQty * ratio / 100);
+      }
+
+      function inspectAdlExecution(position, requestedQty) {
+        const totalQty = getPositionTotalQty(position);
+        const configuredQty = getConfiguredReduceQty(position);
+        const requested = Math.max(0, Number(requestedQty) || 0);
+        const requiredQty = Math.min(totalQty, Math.max(configuredQty, requested));
+        const availableCloseQty = getPositionAvailableCloseQty(position);
+        const completed = !position || position.positionStatus === '已完成' || totalQty <= 0;
+        const openOrders = hasOpenOrders(position);
+        return {
+          totalQty: totalQty,
+          configuredQty: configuredQty,
+          requestedQty: requested,
+          requiredQty: requiredQty,
+          availableCloseQty: availableCloseQty,
+          completed: completed,
+          openOrders: openOrders,
+          needCancelOrders: !completed && openOrders && availableCloseQty < requiredQty,
+          insufficientAfterCheck: !completed && !openOrders && availableCloseQty < requiredQty
+        };
+      }
+
+      function preparePositionForAdl(position, mode, requestedQty) {
+        const check = inspectAdlExecution(position, requestedQty);
+        if (check.completed) {
+          return {
+            ok: false,
+            canceledOrders: false,
+            message: mode === 'manual'
+              ? '此持仓状态为已完成，不可ADL。'
+              : '当前候选持仓状态为已完成，自动顺延下一名候选用户。'
+          };
+        }
+        if (check.needCancelOrders) {
+          position.orderStatus = '无挂单';
+          position.openOrderCount = 0;
+          position.openOrderQty = 0;
+          position.availableCloseQty = check.totalQty;
+          return {
+            ok: true,
+            canceledOrders: true,
+            message: mode === 'manual'
+              ? '检测到该持仓存在挂单且剩余可平部分不足，系统已先撤单，再继续执行ADL。'
+              : '检测到候选用户存在挂单且剩余可平部分不足，系统已先撤单，再继续自动ADL。'
+          };
+        }
+        if (check.insufficientAfterCheck) {
+          return {
+            ok: false,
+            canceledOrders: false,
+            message: mode === 'manual'
+              ? '当前剩余可平部分不足，不可ADL。'
+              : '当前候选用户剩余可平部分不足，自动顺延下一名候选用户。'
+          };
+        }
+        return { ok: true, canceledOrders: false, message: '' };
+      }
+
       function refreshManualAfterPnl() {
         const position = getPositionByKey(state.activeManualKey);
         const closePnl = calcManualAfterPnl(position, mamBankruptcy.value, mamCloseQty.value);
@@ -3014,6 +3336,10 @@
       function openManualAdlModal(key) {
         const position = getPositionByKey(key);
         if (!position) return;
+        if (position.positionStatus === '已完成' || getPositionTotalQty(position) <= 0) {
+          window.alert('此持仓状态为已完成，不可ADL');
+          return;
+        }
         state.activeManualKey = key;
         mamTitle.textContent = '手动ADL减仓 - ' + position.pair + ' / ' + position.userId;
         mamBankruptcy.value = fmtNum(calcBankruptcyPrice(position));
@@ -3023,7 +3349,11 @@
         mamEntryPrice.value = fmtNum(position.entryPrice);
         mamCloseQty.value = fmtNum(Math.min((Number(position.valueU) || 0) * 0.2, Number(position.valueU) || 0));
         mamGoogleCode.value = '';
-        mamError.textContent = '';
+        setManualMessage('', '');
+        const previewCheck = inspectAdlExecution(position, Number(mamCloseQty.value || 0));
+        if (previewCheck.needCancelOrders) {
+          setManualMessage('检测到该持仓存在挂单，且剩余可平部分低于当前配置比例要求；确认执行时将先撤单，再继续ADL。', 'warn');
+        }
         refreshManualAfterPnl();
         manualAdlModal.classList.add('active');
       }
@@ -3043,19 +3373,24 @@
         const remainRatio = totalQty <= 0 ? 0 : Math.max(0, (totalQty - closeQty) / totalQty);
         const remainPnl = beforePnl * remainRatio;
         if (!Number.isFinite(closeQty) || closeQty <= 0) {
-          mamError.textContent = '请输入大于 0 的平仓数量。';
+          setManualMessage('请输入大于 0 的平仓数量。', 'error');
           return;
         }
         if (!Number.isFinite(bankruptcyPrice) || bankruptcyPrice <= 0) {
-          mamError.textContent = '请输入大于 0 的破产价。';
+          setManualMessage('请输入大于 0 的破产价。', 'error');
           return;
         }
         if (closeQty > totalQty) {
-          mamError.textContent = '平仓数量不能大于当前持仓数量。';
+          setManualMessage('平仓数量不能大于当前持仓数量。', 'error');
           return;
         }
         if ((mamGoogleCode.value || '').trim() !== manualGoogleDemoCode) {
-          mamError.textContent = '谷歌验证码错误，请输入演示码 624981。';
+          setManualMessage('谷歌验证码错误，请输入演示码 624981。', 'error');
+          return;
+        }
+        const precheck = preparePositionForAdl(position, 'manual', closeQty);
+        if (!precheck.ok) {
+          setManualMessage(precheck.message, 'error');
           return;
         }
 
@@ -3072,6 +3407,11 @@
 
         position.valueU = Math.max(0, totalQty - closeQty);
         position.upnl = Number(remainPnl.toFixed(2));
+        position.availableCloseQty = Number(position.valueU.toFixed(2));
+        position.positionStatus = position.valueU <= 0 ? '已完成' : '持仓中';
+        position.orderStatus = '无挂单';
+        position.openOrderCount = 0;
+        position.openOrderQty = 0;
         position.updatedAt = doneAt;
 
         const userRow = adlUsers.find(function (item) { return item.pair === position.pair && item.userId === position.userId; });
@@ -3127,7 +3467,7 @@
           beforeProfitRate: Number(beforeProfitRate.toFixed(8)),
           currentReduceProfitRate: Number(currentReduceProfitRate.toFixed(8)),
           pnl: Number(realized.toFixed(2)),
-          status: '已完成'
+          status: precheck.canceledOrders ? '撤单后已完成' : '已完成'
         });
 
         if (!fillRecords[key]) fillRecords[key] = [];
@@ -3150,7 +3490,7 @@
           pairConfig.status = 'warn';
         }
 
-        mamError.textContent = '';
+        setManualMessage('', '');
         state.puPage = 1;
         state.alPage = 1;
         state.adPage = 1;
