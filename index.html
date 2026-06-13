@@ -94,6 +94,10 @@
       gap:12px;
       margin-top:10px;
     }
+    .nav-group{
+      display:grid;
+      gap:8px;
+    }
     .nav-btn{
       width:100%;
       padding:18px;
@@ -115,6 +119,19 @@
     .nav-btn strong{font-size:16px; margin-bottom:8px}
     .nav-btn span{font-size:12px; color:var(--muted); line-height:1.7}
     .nav-btn.active span{color:#dceaff}
+    .nav-btn.sub{
+      width:calc(100% - 18px);
+      margin-left:18px;
+      padding:12px 14px;
+      border-radius:12px;
+      background:rgba(255,255,255,.02);
+    }
+    .nav-btn.sub strong{font-size:14px; margin-bottom:6px}
+    .nav-btn.sub span{font-size:11px}
+    .nav-group.open > .nav-btn:first-child{
+      border-color:rgba(86,167,255,.52);
+      background:linear-gradient(135deg, rgba(86,167,255,.12), rgba(19,29,42,.92));
+    }
 
     .content{display:grid; gap:20px; align-content:start}
     .overview-bar, .section-card{
@@ -133,13 +150,38 @@
     .overview-bar__head{
       display:flex;
       justify-content:space-between;
-      align-items:center;
+      align-items:flex-end;
       gap:12px;
       margin-bottom:14px;
     }
     .overview-bar__head h3{
       margin:0;
       font-size:20px;
+    }
+    .overview-tools{
+      display:flex;
+      align-items:flex-end;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .overview-filter{
+      min-width:180px;
+    }
+    .overview-filter label{
+      display:block;
+      color:var(--muted);
+      margin-bottom:6px;
+      font-size:12px;
+    }
+    .overview-filter select{
+      width:100%;
+      height:38px;
+      border-radius:12px;
+      border:1px solid rgba(148,163,184,.16);
+      background:rgba(8,20,43,.9);
+      color:var(--text);
+      padding:0 12px;
+      outline:none;
     }
     .pill-group{
       display:flex;
@@ -406,6 +448,15 @@
     }
     .spec-card strong{display:block; font-size:13px; margin-bottom:8px}
     .spec-card span{display:block; font-size:12px; color:#d0dceb; line-height:1.85}
+    .spec-card ol{
+      margin:0;
+      padding-left:18px;
+      color:#d0dceb;
+      font-size:12px;
+      line-height:1.85;
+    }
+    .spec-card li{margin:0 0 6px}
+    .spec-card li:last-child{margin-bottom:0}
     .spec-page{display:none}
     .spec-page.active{display:block}
 
@@ -563,13 +614,19 @@
     <aside class="sidebar">
       <div class="eyebrow">ADL · 原型</div>
       <h1>ADL（自动减仓）盈利减仓</h1>
-      <p>单文件 HTML 原型：包含币对配置、配置编辑页面、减仓列表、减仓详情（订单记录/成交记录）。可本地直接打开并演示筛选、分页与页面切换。</p>
+      <p>单文件 HTML 原型：包含币对配置、配置编辑页面、币对持仓用户、减仓列表、ADL当前用户列表、用户详情。可本地直接打开并演示筛选、分页与页面切换。</p>
 
       <div class="nav-list">
-        <button class="nav-btn active" data-page="pair-config">
-          <strong>币对配置</strong>
-          <span>配置触发阈值与统计周期</span>
-        </button>
+        <div class="nav-group" data-group="pair-config">
+          <button class="nav-btn active" data-page="pair-config">
+            <strong>币对配置</strong>
+            <span>配置触发阈值与统计周期</span>
+          </button>
+          <button class="nav-btn sub" data-page="config-editor">
+            <strong>配置编辑</strong>
+            <span>独立页面编辑币对配置</span>
+          </button>
+        </div>
         <button class="nav-btn" data-page="pair-users">
           <strong>币对持仓用户</strong>
           <span>按币对查看持仓用户</span>
@@ -578,9 +635,13 @@
           <strong>减仓列表</strong>
           <span>按交易对/用户查看减仓概览</span>
         </button>
+        <button class="nav-btn" data-page="adl-current-users">
+          <strong>ADL当前用户列表</strong>
+          <span>按用户查看当前ADL画像</span>
+        </button>
         <button class="nav-btn" data-page="adl-detail">
-          <strong>减仓详情</strong>
-          <span>订单记录 / 成交记录</span>
+          <strong>用户详情</strong>
+          <span>当前持仓 / 订单记录 / 成交记录</span>
         </button>
       </div>
     </aside>
@@ -589,11 +650,19 @@
       <div class="overview-bar">
         <div class="overview-bar__head">
           <h3 id="overview-title">ADL（自动减仓）币对配置</h3>
-          <div class="pill-group" aria-label="统计维度">
-            <button type="button" class="pill active" data-gran="day">日</button>
-            <button type="button" class="pill" data-gran="week">周</button>
-            <button type="button" class="pill" data-gran="month">月</button>
-            <button type="button" class="pill" data-gran="total">总</button>
+          <div class="overview-tools">
+            <div class="overview-filter">
+              <label for="overview-pair-filter">顶部统计币对</label>
+              <select id="overview-pair-filter">
+                <option value="">全部</option>
+              </select>
+            </div>
+            <div class="pill-group" aria-label="统计维度">
+              <button type="button" class="pill active" data-gran="day">日</button>
+              <button type="button" class="pill" data-gran="week">周</button>
+              <button type="button" class="pill" data-gran="month">月</button>
+              <button type="button" class="pill" data-gran="total">总</button>
+            </div>
           </div>
         </div>
         <div class="overview-grid" id="overview-grid"></div>
@@ -638,8 +707,10 @@
               <thead>
                 <tr>
                   <th>币对</th>
-                  <th>最多多方向可亏损额(USDT)</th>
-                  <th>用户未来累计亏损额(USDT)</th>
+                  <th>平台最大可亏损额(USDT)</th>
+                  <th>ADL减仓持仓单次比例</th>
+                  <th>当前多仓亏损(USDT)</th>
+                  <th>当前空仓亏损(USDT)</th>
                   <th>已ADL减仓次数</th>
                   <th>ADL盈余总盈亏(USDT)</th>
                   <th>状态</th>
@@ -680,14 +751,9 @@
               <select id="cm-pair"></select>
             </div>
             <div class="modal-field">
-              <label for="cm-max-loss">最多多方向可亏损额(USDT)</label>
+              <label for="cm-max-loss">平台最大可亏损额(USDT)</label>
               <input id="cm-max-loss" type="number" min="0" step="1" />
-              <div class="hint">ADL减仓启动时，对应交易对方向（多头）允许的最大亏损额。超过阈值触发 ADL 减仓机制。</div>
-            </div>
-            <div class="modal-field">
-              <label for="cm-future-loss">用户未来累计亏损额(USDT)</label>
-              <input id="cm-future-loss" type="number" step="1" />
-              <div class="hint">用户未来累计亏损额用于风险参考；负数表示亏损。实际系统按平台口径计算，本原型用于交互演示。</div>
+              <div class="hint">平台最大可亏损额用于定义该币对可承受的总亏损阈值。计算口径：平台最大可亏损额 = 多仓亏损 + 空仓亏损；当总亏损风险接近或超过该阈值时，进入 ADL 风控判断。</div>
             </div>
             <div class="modal-field">
               <label for="cm-long-bankruptcy-offset">多仓用户破产价偏移比例(%)</label>
@@ -698,6 +764,19 @@
               <label for="cm-short-bankruptcy-offset">空仓用户破产价偏移比例(%)</label>
               <input id="cm-short-bankruptcy-offset" type="number" min="0" step="0.01" />
               <div class="hint">用于按市价推导空仓用户破产价。计算口径：空仓用户破产价 = 市价 × (1 + 空仓用户破产价偏移比例)。例如配置 5，则表示按 5% 计算，即空仓用户破产价 = 市价 × (1 + 5%)。</div>
+            </div>
+            <div class="modal-field">
+              <label for="cm-single-reduce-mode">ADL减仓持仓单次比例</label>
+              <select id="cm-single-reduce-mode">
+                <option value="all">全部</option>
+                <option value="ratio">按比例</option>
+              </select>
+              <div class="hint">全部：单次 ADL 时，对当前用户在当前币对、当前方向下的可减仓持仓全部减仓。按比例：单次减仓数量 = 当前可减仓持仓数量 × 配置比例。</div>
+            </div>
+            <div class="modal-field" id="cm-single-reduce-ratio-wrap" style="display:none;">
+              <label for="cm-single-reduce-ratio">单次减仓比例(%)</label>
+              <input id="cm-single-reduce-ratio" type="number" min="0.01" max="100" step="0.01" />
+              <div class="hint">仅当“ADL减仓持仓单次比例”选择“按比例”时生效。支持最多 2 位小数，取值范围大于 0 且小于等于 100；若按比例计算出的减仓数量小于该币对最小开仓数量，则按全部减仓处理，最小开仓数量以后端返回为准。</div>
             </div>
             <div class="modal-field">
               <label>重置用户累计数据</label>
@@ -767,6 +846,7 @@
               <thead>
                 <tr>
                   <th>交易对</th>
+                  <th>保证金模式</th>
                   <th>用户ID</th>
                   <th>用户账号</th>
                   <th>持仓方向</th>
@@ -814,6 +894,22 @@
               <input id="al-filter-user" type="text" placeholder="请输入用户ID" />
             </div>
             <div class="field">
+              <label>类型</label>
+              <select id="al-filter-type">
+                <option value="">全部类型</option>
+                <option value="auto">自动ADL</option>
+                <option value="manual">手动ADL</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>开始时间</label>
+              <input id="al-filter-start" type="datetime-local" step="1" />
+            </div>
+            <div class="field">
+              <label>结束时间</label>
+              <input id="al-filter-end" type="datetime-local" step="1" />
+            </div>
+            <div class="field">
               <label>操作</label>
               <div class="button-group">
                 <button type="button" class="button" id="al-apply">查询</button>
@@ -829,12 +925,12 @@
                   <th>交易对</th>
                   <th>用户ID</th>
                   <th>用户账号</th>
-                  <th>盈利阈值(%)</th>
-                  <th>减仓比例(%)</th>
-                  <th>减仓次数</th>
-                  <th>30天ADL减仓次数</th>
-                  <th>30天ADL减仓金额(USDT)</th>
+                  <th>类型</th>
+                  <th>减仓前用户未实现盈亏(USDT)</th>
+                  <th>减仓前盈利率(%)</th>
+                  <th>此次减仓盈利率(%)</th>
                   <th>减仓已实现盈亏(USDT)</th>
+                  <th>ADL时排序值</th>
                   <th>最新减仓时间</th>
                   <th>操作</th>
                 </tr>
@@ -854,12 +950,62 @@
         </div>
       </section>
 
+      <section id="adl-current-users" class="page">
+        <div class="section-card">
+          <div class="section-head">
+            <div>
+              <div class="breadcrumb"><span>后台</span><span>›</span><span>ADL减仓</span><span>›</span><b>ADL当前用户列表</b></div>
+              <h3>ADL当前用户列表</h3>
+            </div>
+          </div>
+
+          <div class="field-grid">
+            <div class="field">
+              <label>用户UID</label>
+              <input id="acu-filter-user" type="text" placeholder="请输入用户UID" />
+            </div>
+            <div class="field">
+              <label>操作</label>
+              <div class="button-group">
+                <button type="button" class="button" id="acu-apply">查询</button>
+                <button type="button" class="button secondary" id="acu-reset">重置</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>用户UID</th>
+                  <th>当前持仓总额(USDT)</th>
+                  <th>持仓未实现盈利总额(USDT)</th>
+                  <th>用户历史持仓数</th>
+                  <th>用户已实现盈利总额(USDT)</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="acu-tbody"></tbody>
+            </table>
+          </div>
+
+          <div class="footer-row">
+            <div id="acu-summary">当前展示 0 条用户记录</div>
+            <div class="pagination">
+              <button type="button" class="page-chip" id="acu-prev">上一页</button>
+              <div id="acu-page">第 1 页 / 共 1 页</div>
+              <button type="button" class="page-chip" id="acu-next">下一页</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section id="adl-detail" class="page">
         <div class="section-card">
           <div class="section-head">
             <div>
-              <div class="breadcrumb"><span>后台</span><span>›</span><span>ADL减仓</span><span>›</span><b>减仓详情</b></div>
-              <h3>ADL减仓详情</h3>
+              <div class="breadcrumb"><span>后台</span><span>›</span><span>ADL减仓</span><span>›</span><b>用户详情</b></div>
+              <h3>ADL用户详情</h3>
             </div>
             <div class="button-group">
               <button type="button" class="button secondary" id="back-to-list">返回列表</button>
@@ -867,6 +1013,36 @@
           </div>
 
           <div class="detail-grid" id="detail-kpis"></div>
+
+          <div class="section-head" style="margin-top:16px; margin-bottom:10px;">
+            <div>
+              <h3 style="font-size:16px;">用户当前持仓列表</h3>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>交易对</th>
+                  <th>保证金模式</th>
+                  <th>持仓方向</th>
+                  <th>持仓数量(USDT)</th>
+                  <th>开仓均价</th>
+                  <th>标记价格</th>
+                  <th>未实现盈亏(USDT)</th>
+                  <th>杠杆</th>
+                  <th>最后更新时间</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="detail-position-tbody"></tbody>
+            </table>
+          </div>
+
+          <div class="footer-row" style="margin-top:10px;">
+            <div id="detail-position-summary">当前展示 0 条当前持仓</div>
+          </div>
 
           <div class="tabs" role="tablist" aria-label="详情Tab">
             <button type="button" class="tab active" data-tab="orders">用户减仓订单记录</button>
@@ -916,161 +1092,562 @@
     <h3>口径说明</h3>
     <div class="spec-card">
       <strong>全局口径定义</strong>
-      <span>本原型所有计数字段（总数、次数、页码等）统一展示为整数；金额字段统一展示为 USDT，展示最多 8 位小数，末尾为 0 的小数位不展示；未实现盈亏字段统一展示最多 8 位小数，末尾为 0 的小数位不展示；时间展示格式为 YYYY-MM-DD HH:mm:ss。页面中涉及交易对价格、持仓数量、持仓方向、开仓均价、标记价格、当前价等展示字段，均以后端币对配置及后端实时返回结果为准，原型仅作交互与页面呈现演示。</span>
+      <ol>
+        <li>所有计数字段统一按整数展示，包括总数、次数、页码、排名名次等。</li>
+        <li>所有金额字段统一按 USDT 口径展示，最多保留 8 位小数，末尾为 0 的小数位不展示。</li>
+        <li>所有未实现盈亏字段最多保留 8 位小数，末尾为 0 的小数位不展示。</li>
+        <li>所有时间字段统一展示为 `YYYY-MM-DD HH:mm:ss`。</li>
+        <li>交易对价格、持仓数量、持仓方向、开仓均价、标记价格、当前价等基础行情与持仓字段，以后端币对配置和后端实时返回结果为准，前端不自行推导真实结果。</li>
+        <li>平台最大可亏损额表示该币对在平台维度可承受的总亏损阈值，计算口径为：平台最大可亏损额 = 多仓亏损 + 空仓亏损。</li>
+        <li>当前多仓亏损与当前空仓亏损为展示字段，不在前端配置页录入，统一以后端风险结果返回为准。</li>
+        <li>ADL 触发时，系统先比较当前多仓亏损与当前空仓亏损的绝对值，亏损更高的方向优先执行自动 ADL。</li>
+        <li>每完成一个用户在当前币对、当前方向下的全部持仓 ADL 后，系统需要基于最新亏损数据重新比较多空方向风险，并重新判断下一次 ADL 应处理的方向与用户。</li>
+      </ol>
     </div>
     <div class="spec-card">
       <strong>顶部统计维度（日 / 周 / 月 / 总）</strong>
-      <span>页面顶部的“日 / 周 / 月 / 总”为全局统计维度切换项，默认选中“日”。日表示按当日自然日口径汇总当前页面顶部数据概览；周表示按当前自然周口径汇总；月表示按当前自然月口径汇总；总表示按系统当前可统计全量周期汇总。该切换项统一作用于顶部数据概览卡片，不直接改变列表字段结构；列表是否联动统计维度，以各列表自身筛选与排序规则为准。</span>
+      <ol>
+        <li>顶部“日 / 周 / 月 / 总”为全局统计维度切换项，默认选中“日”。</li>
+        <li>“日”表示按当日自然日汇总顶部统计数据；“周”表示按当前自然周汇总；“月”表示按当前自然月汇总；“总”表示按系统当前可统计全量周期汇总。</li>
+        <li>该切换项统一作用于顶部数据概览卡片。</li>
+        <li>顶部新增“顶部统计币对”筛选，默认“全部”；选择具体币对后，顶部“减仓次数”和“用户ADL总盈亏”均按所选币对联动刷新。</li>
+        <li>减仓次数 = 当前筛选范围内用户减仓次数字段 `adlUsers.reduceTimes` 汇总结果；用户ADL总盈亏 = 当前筛选范围内 `adlUsers.realizedPnl` 汇总结果。</li>
+        <li>列表是否联动统计维度，以各列表自身口径定义为准，不因顶部切换自动改变字段结构。</li>
+      </ol>
+    </div>
+    <div class="spec-card">
+      <strong>输入项全局规则</strong>
+      <ol>
+        <li>所有输入框以后端接口校验和最终返回结果为准，前端仅负责录入限制、提示文案和页面展示。</li>
+        <li>百分比类输入项统一按百分比口径录入，默认支持最多 2 位小数。</li>
+        <li>币对价格、持仓数量、标记价格、当前价、开仓均价等行情与数量类字段，以后端币对配置和后端返回参数为准。</li>
+        <li>谷歌验证码统一为 6 位纯数字；长度不足 6 位、包含非数字字符或为空，均视为不合法输入。</li>
+      </ol>
     </div>
 
     <div class="spec-page active" data-spec-page="pair-config">
       <div class="spec-card">
         <strong>币对配置</strong>
-        <span>展示 ADL 盈利减仓的交易对级配置，用于定义触发阈值、统计周期与风控预警状态。列表支持按币对关键字和状态筛选，并分页展示。</span>
+        <ol>
+          <li>本页展示 ADL 盈利减仓的交易对级配置。</li>
+          <li>本页用途是定义触发阈值、单次减仓策略、统计周期和风控预警状态。</li>
+          <li>列表支持筛选和分页。</li>
+        </ol>
       </div>
       <div class="spec-card">
-        <strong>最多多方向可亏损额(USDT)</strong>
-        <span>该交易对触发 ADL 盈利减仓时，多方向允许承受的最大可亏损额阈值。当系统识别到多方向风险超过阈值时，触发对应减仓处置。</span>
+        <strong>筛选输入项定义</strong>
+        <ol>
+          <li>搜索币对：支持输入交易对关键字，按包含关系匹配币对名称；空值表示不过滤。</li>
+          <li>状态：支持选择“全部状态 / 风险预警 / 正常”，默认“全部状态”。</li>
+          <li>点击“查询”后，列表按当前筛选条件过滤，并从第一页开始展示。</li>
+          <li>点击“重置”后，搜索币对清空、状态恢复为“全部状态”，并重新加载第一页。</li>
+        </ol>
       </div>
       <div class="spec-card">
-        <strong>用户未来累计亏损额(USDT)</strong>
-        <span>用于描述该交易对下用户未来累计盈亏的风险参考值；负数表示亏损，数值越小代表风险越高。实际系统可用平台规则计算并落库，本原型仅作展示与筛选演示。</span>
+        <strong>平台最大可亏损额(USDT)</strong>
+        <ol>
+          <li>该字段表示该交易对在平台维度可承受的总亏损阈值。</li>
+          <li>计算口径：平台最大可亏损额 = 多仓亏损 + 空仓亏损。</li>
+          <li>当系统识别到总亏损风险超过该阈值时，触发对应减仓处置。</li>
+        </ol>
+      </div>
+      <div class="spec-card">
+        <strong>当前多仓亏损 / 当前空仓亏损(USDT)</strong>
+        <ol>
+          <li>当前多仓亏损表示该交易对在多仓方向当前累计亏损金额；当前空仓亏损表示该交易对在空仓方向当前累计亏损金额。</li>
+          <li>两个字段均以负数表示亏损，绝对值越大表示对应方向风险越高。</li>
+          <li>两个字段由后台风险结果返回，仅用于展示和风控判断，不在前端配置编辑页手工录入。</li>
+          <li>系统判断 ADL 方向时，先比较两个方向亏损绝对值，亏损更大的方向优先处理。</li>
+        </ol>
+      </div>
+      <div class="spec-card">
+        <strong>ADL减仓持仓单次比例</strong>
+        <ol>
+          <li>该字段用于定义自动 ADL 场景下，单次对目标持仓执行“全部减仓”还是“按比例减仓”。</li>
+          <li>固定选项为“全部 / 按比例”，默认取当前币对已保存配置；新增币对时默认“全部”。</li>
+          <li>选择“全部”时，表示单次 ADL 对当前用户在当前币对、当前方向下的可减仓持仓全部减仓。</li>
+          <li>选择“按比例”时，单次减仓数量 = 当前可减仓持仓数量 × 单次减仓比例。</li>
+          <li>若按比例计算出的减仓数量小于该币对最小开仓数量，则降级为全部减仓；最小开仓数量以后端返回为准。</li>
+        </ol>
+      </div>
+      <div class="spec-card">
+        <strong>已ADL减仓次数 / ADL盈余总盈亏(USDT)</strong>
+        <ol>
+          <li>已ADL减仓次数：表示该交易对在当前统计周期内已触发的 ADL 减仓总次数，展示为整数。</li>
+          <li>ADL盈余总盈亏(USDT)：表示该交易对在当前统计周期内因 ADL 减仓累计产生的盈亏结果。</li>
+          <li>ADL盈余总盈亏大于 0 表示平台侧盈余，小于 0 表示平台侧亏损。</li>
+        </ol>
       </div>
       <div class="spec-card">
         <strong>状态</strong>
-        <span>状态取值固定为风险预警/正常。风险预警用于提示该交易对当前风险接近触发线或已发生减仓事件；正常表示近期风险低于预警阈值。</span>
+        <ol>
+          <li>状态固定取值为“风险预警 / 正常”。</li>
+          <li>风险预警：表示该交易对当前风险接近触发线或已发生减仓事件。</li>
+          <li>正常：表示近期风险低于预警阈值。</li>
+        </ol>
       </div>
       <div class="spec-card">
         <strong>配置编辑入口</strong>
-        <span>点击“添加币对配置”或列表“编辑”进入独立配置编辑页面，不再使用弹窗。编辑页支持选择交易对、设置最多多方向可亏损额、设置用户未来累计亏损额、设置多仓用户破产价偏移比例、设置空仓用户破产价偏移比例、选择重置周期（日/周/月/总），并展示当前风控率与预计收益等参考指标。</span>
+        <ol>
+          <li>点击“添加币对配置”或列表“编辑”进入独立配置编辑页面。</li>
+          <li>配置编辑不使用弹窗，使用独立页面承载长字段与多参数。</li>
+          <li>编辑页支持设置：交易对、平台最大可亏损额、多仓用户破产价偏移比例、空仓用户破产价偏移比例、ADL减仓持仓单次比例、重置周期。</li>
+        </ol>
       </div>
       <div class="spec-card">
         <strong>多仓用户破产价偏移比例(%) / 空仓用户破产价偏移比例(%)</strong>
-        <span>两项配置均用于按触发时市场价格推导用户破产价。多仓用户破产价 = 市价 × (1 - 多仓用户破产价偏移比例)；空仓用户破产价 = 市价 × (1 + 空仓用户破产价偏移比例)。配置值按百分比理解，例如输入 5 表示 5%，实际计算时换算为 0.05。</span>
+        <ol>
+          <li>两项配置均用于按触发时市场价格推导用户破产价。</li>
+          <li>多仓用户破产价 = 市价 × (1 - 多仓用户破产价偏移比例)。</li>
+          <li>空仓用户破产价 = 市价 × (1 + 空仓用户破产价偏移比例)。</li>
+          <li>配置值按百分比理解，例如输入 5 表示 5%，实际计算时换算为 0.05。</li>
+        </ol>
       </div>
       <div class="spec-card">
         <strong>状态点击结果</strong>
-        <span>币对配置列表中的“风险预警”为可点击结果标签。点击后打开结果弹窗，展示该币对的最多多方向可亏损额、用户未来累计亏损额、风险比率、当前状态、30天已ADL次数以及状态判定公式，便于核对预警来源；“正常”状态仅展示结果标签，不弹出结果说明。</span>
+        <ol>
+          <li>币对配置列表中的“风险预警”为可点击结果标签。</li>
+          <li>点击后打开结果弹窗，展示：平台最大可亏损额、当前多仓亏损、当前空仓亏损、风险比率、当前优先ADL方向、当前状态、30天已ADL次数、状态判定公式。</li>
+          <li>“正常”状态仅展示结果标签，不弹出结果说明。</li>
+        </ol>
+      </div>
+      <div class="spec-card">
+        <strong>操作列</strong>
+        <ol>
+          <li>编辑：进入当前币对的配置编辑页面。</li>
+          <li>币对持仓用户：跳转到该币对的持仓用户列表，并自动带入交易对筛选条件。</li>
+          <li>减仓详情：跳转到 ADL减仓列表，并自动带入当前币对筛选条件，用于查看该币对下用户减仓记录。</li>
+        </ol>
       </div>
       <div class="spec-card">
         <strong>分页</strong>
-        <span>当币对配置总数大于 8 条时分页展示，每页固定 8 条，支持上一页和下一页切换。</span>
+        <ol>
+          <li>当币对配置总数大于 8 条时分页展示。</li>
+          <li>每页固定展示 8 条。</li>
+          <li>支持上一页和下一页切换。</li>
+        </ol>
       </div>
     </div>
 
     <div class="spec-page" data-spec-page="config-editor">
       <div class="spec-card">
         <strong>配置编辑页面</strong>
-        <span>点击“添加币对配置”或列表“编辑”进入独立配置编辑页面，不再使用弹窗。页面展示完整配置字段、风险参考说明、风控率与预计收益参考值，适合长字段与多参数场景录入。</span>
+        <ol>
+          <li>本页为独立配置编辑页面，不使用弹窗。</li>
+          <li>本页展示完整配置字段、风险参考说明、风控率与预计收益参考值。</li>
+          <li>本页用于承载长字段和多参数录入场景。</li>
+        </ol>
+      </div>
+      <div class="spec-card">
+        <strong>输入项逐项定义</strong>
+        <ol>
+          <li>交易对：下拉单选，取值范围以后端支持的币对配置列表为准，保存后回写当前币对配置。</li>
+          <li>平台最大可亏损额(USDT)：仅支持大于 0 的数值，保存后作为平台总亏损阈值参与风险比率计算。</li>
+          <li>多仓用户破产价偏移比例(%)：支持最多 2 位小数，必须大于等于 0，保存后按“市价 × (1 - 偏移比例)”参与多仓破产价推导。</li>
+          <li>空仓用户破产价偏移比例(%)：支持最多 2 位小数，必须大于等于 0，保存后按“市价 × (1 + 偏移比例)”参与空仓破产价推导。</li>
+          <li>ADL减仓持仓单次比例：下拉单选，支持“全部 / 按比例”；选择“按比例”后，展示比例输入框。</li>
+          <li>单次减仓比例(%)：仅在“按比例”时必填，支持最多 2 位小数，取值范围大于 0 且小于等于 100。</li>
+          <li>重置用户累计数据：单选项，支持日、周、月、总，保存后回写当前统计周期配置。</li>
+          <li>点击“保存配置”后，列表与顶部概览使用保存后的值刷新；点击“返回列表”不保存未确认修改。</li>
+        </ol>
       </div>
       <div class="spec-card">
         <strong>页面价格与数量来源</strong>
-        <span>配置编辑页中涉及交易对、市价推导、破产价偏移比例等参数，均以后端币对配置为准；后续页面展示的持仓数量、开仓均价、标记价格、当前价及相关价格结果，均以后端返回的该币对配置与实时数据为准，前端不自行重算基础行情口径。</span>
+        <ol>
+          <li>配置编辑页中涉及交易对、市价推导、破产价偏移比例等参数，以后端币对配置为准。</li>
+          <li>配置编辑页中的当前多仓亏损、当前空仓亏损、最小开仓数量不由前端录入，统一以后端风控与币对参数返回结果为准。</li>
+          <li>后续页面展示的持仓数量、开仓均价、标记价格、当前价及相关价格结果，以后端返回的该币对配置与实时数据为准。</li>
+          <li>前端不自行重算基础行情口径。</li>
+        </ol>
+      </div>
+      <div class="spec-card">
+        <strong>ADL减仓持仓单次比例</strong>
+        <ol>
+          <li>“全部”表示单次 ADL 时，对当前用户当前币对当前方向下的可减仓持仓全部减仓。</li>
+          <li>“按比例”表示单次减仓数量 = 当前可减仓持仓数量 × 单次减仓比例。</li>
+          <li>若计算结果小于该币对最小开仓数量，则按全部减仓处理。</li>
+          <li>最小开仓数量与最终可减仓数量口径以后端返回为准，前端仅展示当前配置。</li>
+        </ol>
       </div>
       <div class="spec-card">
         <strong>多仓用户破产价偏移比例(%) / 空仓用户破产价偏移比例(%)</strong>
-        <span>两项配置均用于按触发时市场价格推导用户破产价。多仓用户破产价 = 市价 × (1 - 多仓用户破产价偏移比例)；空仓用户破产价 = 市价 × (1 + 空仓用户破产价偏移比例)。配置值按百分比理解，例如输入 5 表示 5%，实际计算时换算为 0.05。</span>
+        <ol>
+          <li>两项配置均用于按触发时市场价格推导用户破产价。</li>
+          <li>多仓用户破产价 = 市价 × (1 - 多仓用户破产价偏移比例)。</li>
+          <li>空仓用户破产价 = 市价 × (1 + 空仓用户破产价偏移比例)。</li>
+          <li>配置值按百分比理解，例如输入 5 表示 5%，实际计算时换算为 0.05。</li>
+        </ol>
       </div>
       <div class="spec-card">
         <strong>保存与返回</strong>
-        <span>点击“保存配置”后回写当前交易对配置，并刷新币对配置列表与顶部数据概览；点击“返回列表”返回币对配置列表页，不保存未确认修改。</span>
+        <ol>
+          <li>点击“保存配置”后，回写当前交易对配置。</li>
+          <li>保存成功后，刷新币对配置列表与顶部数据概览。</li>
+          <li>点击“返回列表”返回币对配置列表页，不保存未确认修改。</li>
+        </ol>
+      </div>
+      <div class="spec-card">
+        <strong>当前风控率 / 预计收益 / 重置</strong>
+        <ol>
+          <li>当前风控率：表示根据当前配置值计算出的风险参考比例，最多支持 2 位小数。</li>
+          <li>预计收益：表示基于当前配置值推导的参考收益金额，单位为 USDT，最多展示 8 位小数。</li>
+          <li>点击“重置”后，当前编辑表单恢复为本次进入页面时的原始配置值，不保存未确认修改。</li>
+        </ol>
       </div>
     </div>
 
     <div class="spec-page" data-spec-page="pair-users">
       <div class="spec-card">
         <strong>币对持仓用户列表</strong>
-        <span>展示某个交易对下当前存在持仓的用户列表，用于快速查看持仓风险敞口。支持按交易对、用户ID、用户账号筛选，并分页展示。列表排序口径与 ADL 减仓列表保持一致，按全局综合排序值从高到低排序。</span>
+        <ol>
+          <li>本页展示某个交易对下当前存在持仓的用户列表。</li>
+          <li>本页用于快速查看持仓风险敞口。</li>
+          <li>支持按交易对、用户ID、用户账号筛选，并分页展示。</li>
+          <li>列表排序口径与 ADL 减仓列表保持一致，按全局综合排序值从高到低排序。</li>
+        </ol>
+      </div>
+      <div class="spec-card">
+        <strong>筛选输入项定义</strong>
+        <ol>
+          <li>交易对：下拉单选，默认全部；选中后仅展示对应币对持仓用户。</li>
+          <li>用户ID：文本输入，按包含关系匹配；空值表示不过滤。</li>
+          <li>用户账号：文本输入，按包含关系匹配；空值表示不过滤。</li>
+          <li>点击“查询”后，列表按条件过滤并回到第一页。</li>
+          <li>点击“重置”后，交易对恢复全部、用户ID和用户账号清空，并重新加载第一页。</li>
+        </ol>
       </div>
       <div class="spec-card">
         <strong>持仓数量(USDT)</strong>
-        <span>用户在该交易对下的持仓名义价值（按 USDT 计价）。该字段以后端币对配置和后端持仓结果为准，前端仅按接口返回结果展示，不自行调整基础持仓数量口径。</span>
+        <ol>
+          <li>该字段表示用户在该交易对下的持仓名义价值，按 USDT 计价。</li>
+          <li>该字段包含用户当前币对下的全仓持仓与逐仓持仓。</li>
+          <li>该字段以后端币对配置和后端持仓结果为准。</li>
+          <li>前端仅按接口返回结果展示，不自行调整基础持仓数量口径。</li>
+        </ol>
+      </div>
+      <div class="spec-card">
+        <strong>保证金模式 / 持仓方向 / 杠杆 / 最后更新时间</strong>
+        <ol>
+          <li>保证金模式：取值为“全仓 / 逐仓”，以后端持仓返回结果为准。</li>
+          <li>持仓方向：取值为“多仓 / 空仓”，以后端持仓方向字段为准。</li>
+          <li>杠杆：表示该用户当前持仓使用的杠杆倍数，以后端返回结果为准。</li>
+          <li>最后更新时间：表示该条持仓记录最近一次被风控或持仓同步刷新到页面的时间，格式为 `YYYY-MM-DD HH:mm:ss`。</li>
+        </ol>
       </div>
       <div class="spec-card">
         <strong>开仓均价 / 标记价格</strong>
-        <span>币对持仓用户列表中的开仓均价、标记价格以及相关详情页中的当前价，均以后端该币对配置和实时行情返回结果为准。前端不以本地演示数据重新推导真实行情，仅负责展示与交互联动。</span>
+        <ol>
+          <li>开仓均价、标记价格以及相关详情页中的当前价，均以后端该币对配置和实时行情返回结果为准。</li>
+          <li>前端不以本地演示数据重新推导真实行情，仅负责展示与交互联动。</li>
+        </ol>
       </div>
       <div class="spec-card">
         <strong>未实现盈亏(USDT)</strong>
-        <span>持仓的当前未实现盈亏（按 USDT 计价）。正数表示盈利，负数表示亏损。展示最多保留 8 位小数，末尾为 0 的小数位不展示；该字段以后端返回结果为准。</span>
+        <ol>
+          <li>该字段表示当前持仓的未实现盈亏，按 USDT 计价。</li>
+          <li>大于 0 表示盈利，小于 0 表示亏损。</li>
+          <li>最多保留 8 位小数，末尾为 0 的小数位不展示。</li>
+          <li>该字段以后端返回结果为准。</li>
+        </ol>
       </div>
       <div class="spec-card">
         <strong>分数与排序</strong>
-        <span>币对持仓用户列表与 ADL 减仓列表使用同一套全局排序公式。公式如下：盈亏百分比 = 未实现收益 ÷ 绝对值(名目仓位)；有效杠杆 = 绝对值(名目仓位) ÷ (钱包余额 + 未实现收益)，当钱包余额 + 未实现收益小于等于 0 时分母按 1 处理；若盈亏百分比大于等于 0，则基础排序值 = 盈亏百分比 × 有效杠杆；若盈亏百分比小于 0，则基础排序值 = 盈亏百分比 ÷ 有效杠杆；次数惩罚分位值 = (用户总数 - 30天ADL减仓次数排名 + 1) ÷ 用户总数；金额惩罚分位值 = (用户总数 - 30天ADL减仓金额排名 + 1) ÷ 用户总数；公平调节系数 = 1 + 0.35 × 次数惩罚分位值 + 0.15 × 金额惩罚分位值；当基础排序值大于等于 0 时，综合排序值 = 基础排序值 ÷ 公平调节系数；当基础排序值小于 0 时，综合排序值 = 基础排序值 × 公平调节系数。示例：若当前用户总数为 10，该用户 30天ADL减仓次数排名第 1、30天ADL减仓金额排名第 1，则次数惩罚分位值 = (10 - 1 + 1) ÷ 10 = 1，金额惩罚分位值 = (10 - 1 + 1) ÷ 10 = 1，公平调节系数 = 1 + 0.35 × 1 + 0.15 × 1 = 1.5；若该用户基础排序值 = 0.40645161，则综合排序值 = 0.40645161 ÷ 1.5 = 0.27096774。以上三个值的来源分别是：次数惩罚分位值来自 30 天 ADL 次数在全体用户中的排名，金额惩罚分位值来自 30 天 ADL 金额在全体用户中的排名，公平调节系数来自前两个分位值代入公式后的结果。影响说明：30天ADL减仓次数越多、30天ADL减仓金额越大，说明该用户近 30 天已经承担了更多 ADL，对应排名会更靠前，次数惩罚分位值和金额惩罚分位值会更大，进而让公平调节系数更大，排序更有可能向后延。对基础排序值为正的用户，公平调节系数越大，综合排序值越小，越不容易继续排在前面被优先 ADL；对基础排序值为负的用户，公平调节系数越大，综合排序值越负，同样会被进一步后置。列表中的分数字段即综合排序值，展示最多 8 位小数；点击分数可查看相关计算参数与计算过程；页面按分数从高到低排序，若分数相同，则按最后更新时间倒序，再按用户ID倒序。</span>
+        <ol>
+          <li>币对持仓用户列表与 ADL 减仓列表使用同一套全局排序公式。</li>
+          <li>盈亏百分比 = 未实现收益 ÷ 绝对值(名目仓位)。</li>
+          <li>有效杠杆 = 绝对值(名目仓位) ÷ (钱包余额 + 未实现收益)；当钱包余额 + 未实现收益小于等于 0 时，分母按 1 处理。</li>
+          <li>若盈亏百分比大于等于 0，则基础排序值 = 盈亏百分比 × 有效杠杆；若盈亏百分比小于 0，则基础排序值 = 盈亏百分比 ÷ 有效杠杆。</li>
+          <li>次数惩罚分位值 = (用户总数 - 30天ADL减仓次数排名 + 1) ÷ 用户总数。</li>
+          <li>金额惩罚分位值 = (用户总数 - 30天ADL减仓金额排名 + 1) ÷ 用户总数。</li>
+          <li>公平调节系数 = 1 + 0.35 × 次数惩罚分位值 + 0.15 × 金额惩罚分位值。</li>
+          <li>基础排序值大于等于 0 时，综合排序值 = 基础排序值 ÷ 公平调节系数；基础排序值小于 0 时，综合排序值 = 基础排序值 × 公平调节系数。</li>
+          <li>30天ADL减仓次数越多、30天ADL减仓金额越大，则公平调节系数越大，排序更可能向后延。</li>
+          <li>列表中的“分数”字段即综合排序值，最多展示 8 位小数；点击分数可查看相关计算参数与计算过程。</li>
+          <li>页面按分数从高到低排序；若分数相同，则按最后更新时间倒序，再按用户ID倒序。</li>
+        </ol>
       </div>
       <div class="spec-card">
-        <strong>操作-减仓详情</strong>
-        <span>点击“减仓详情”跳转至减仓详情页，默认打开订单记录 Tab，并展示该用户在该交易对下的减仓明细；若该用户暂无减仓记录，则展示空列表。</span>
+        <strong>操作-用户详情</strong>
+        <ol>
+          <li>点击“用户详情”后，页面跳转至“用户详情”页。</li>
+          <li>跳转时传递参数 `userId`；若入口来源于币对持仓用户列表或减仓列表，则同时保留当前入口页作为返回来源。</li>
+          <li>跳转时默认传递 `tab = orders`，即默认打开“用户减仓订单记录”页签。</li>
+          <li>详情页顶部汇总信息、当前持仓列表、订单记录、成交记录均按 `userId` 聚合展示。</li>
+          <li>若该用户暂无减仓记录，则订单记录与成交记录展示空列表；若暂无当前持仓，则当前持仓列表展示空列表。</li>
+        </ol>
       </div>
       <div class="spec-card">
         <strong>操作-手动ADL减仓</strong>
-        <span>点击“手动ADL减仓”在当前页打开弹窗。弹窗字段包含破产价、当前价、持仓数量、持仓方向、持仓均价、平仓数量、平仓后用户盈亏显示、谷歌验证码、确认、取消。破产价为可输入字段，其余展示字段按当前持仓数据回填；其中当前价、持仓数量、持仓方向、持仓均价以后端币对配置与后端持仓结果为准。平仓后用户盈亏显示按破产价、平仓数量、持仓方向、持仓均价实时联动计算；确认后更新持仓用户列表、减仓列表和减仓详情演示数据。</span>
+        <ol>
+          <li>点击“手动ADL减仓”后，在当前页面打开弹窗。</li>
+          <li>弹窗字段包含：破产价、当前价、持仓数量、持仓方向、持仓均价、平仓数量、平仓后用户盈亏显示、谷歌验证码、确认、取消。</li>
+          <li>破产价为可输入字段；其余展示字段按当前持仓数据回填。</li>
+          <li>当前价、持仓数量、持仓方向、持仓均价以后端币对配置与后端持仓结果为准。</li>
+          <li>平仓后用户盈亏显示实时联动计算：多仓按（破产价 - 持仓均价）× 平仓数量；空仓按（持仓均价 - 破产价）× 平仓数量。</li>
+          <li>确认成功后，更新持仓用户列表、减仓列表、ADL当前用户列表和用户详情演示数据。</li>
+        </ol>
+      </div>
+      <div class="spec-card">
+        <strong>手动ADL输入项定义</strong>
+        <ol>
+          <li>破产价：支持输入大于 0 的价格值，最多 2 位小数，作为本次手动 ADL 的价格输入参与盈亏计算。</li>
+          <li>平仓数量：支持输入大于 0 且不大于当前持仓数量的数值。</li>
+          <li>谷歌验证码：仅支持 6 位纯数字，输入不满足规则时确认失败。</li>
+          <li>点击“确认”后，若输入合法，则刷新持仓用户列表、减仓列表、ADL当前用户列表与用户详情；若输入不合法，则前端提示错误信息且不更新结果。</li>
+        </ol>
+      </div>
+      <div class="spec-card">
+        <strong>手动ADL弹窗展示字段</strong>
+        <ol>
+          <li>当前价：表示当前币对的实时价格，以后端行情返回为准。</li>
+          <li>持仓数量：表示当前用户在该币对下的可减仓持仓数量，以后端持仓结果为准。</li>
+          <li>持仓方向：取值为“多仓 / 空仓”。</li>
+          <li>持仓均价：表示当前持仓的开仓均价。</li>
+          <li>平仓后用户盈亏显示：表示按当前输入的破产价、平仓数量、持仓方向、持仓均价计算出的本次减仓盈亏结果，金额最多展示 8 位小数。</li>
+          <li>错误提示区域：用于展示验证码不合法、平仓数量超限或必填项为空等校验失败原因。</li>
+        </ol>
       </div>
       <div class="spec-card">
         <strong>分页</strong>
-        <span>当币对持仓用户总数大于 8 条时分页展示，每页固定 8 条，支持上一页和下一页切换。</span>
+        <ol>
+          <li>当币对持仓用户总数大于 8 条时分页展示。</li>
+          <li>每页固定展示 8 条。</li>
+          <li>支持上一页和下一页切换。</li>
+        </ol>
       </div>
     </div>
 
     <div class="spec-page" data-spec-page="adl-list">
       <div class="spec-card">
         <strong>减仓列表</strong>
-        <span>展示发生过 ADL 盈利减仓的用户维度汇总列表。支持按交易对与用户ID筛选，支持分页展示。</span>
+        <ol>
+          <li>本页展示发生过 ADL 盈利减仓的用户维度汇总列表。</li>
+          <li>支持按交易对、用户ID、类型、开始时间、结束时间筛选，并支持分页展示。</li>
+          <li>列表展示字段包括：类型、减仓前用户未实现盈亏、减仓前盈利率、此次减仓盈利率、减仓已实现盈亏、ADL时排序值、最新减仓时间。</li>
+          <li>减仓次数、30天ADL减仓次数、30天ADL减仓金额不在本列表展示，但仍用于详情页、统计口径和排序计算。</li>
+          <li>列表默认按最新减仓时间倒序排序；若最新减仓时间相同，则按 ADL时排序值倒序，再按用户ID倒序。</li>
+        </ol>
+      </div>
+      <div class="spec-card">
+        <strong>筛选输入项定义</strong>
+        <ol>
+          <li>交易对：下拉单选，默认全部；选中后仅展示该币对减仓记录。</li>
+          <li>用户ID：文本输入，按包含关系匹配；空值表示不过滤。</li>
+          <li>类型：下拉单选，支持“全部类型 / 自动ADL / 手动ADL”。</li>
+          <li>开始时间：按最新减仓时间大于等于开始时间过滤。</li>
+          <li>结束时间：按最新减仓时间小于等于结束时间过滤。</li>
+          <li>点击“查询”后，列表按条件过滤并回到第一页。</li>
+          <li>点击“重置”后，交易对恢复全部、用户ID清空、类型恢复全部类型、开始时间和结束时间清空，并重新加载第一页。</li>
+        </ol>
       </div>
       <div class="spec-card">
         <strong>全局排序规则</strong>
-        <span>ADL 减仓用户列表按全局候选用户池统一计算排序，页面筛选仅影响展示结果，不改变用户在当前排序中的全局位置。基础排序值计算规则为：盈亏百分比 = 未实现收益 ÷ 绝对值(名目仓位)；有效杠杆 = 绝对值(名目仓位) ÷ (钱包余额 + 未实现收益)，当钱包余额 + 未实现收益小于等于 0 时，分母按 1 处理；若盈亏百分比大于等于 0，则基础排序值 = 盈亏百分比 × 有效杠杆；若盈亏百分比小于 0，则基础排序值 = 盈亏百分比 ÷ 有效杠杆；杠杆盈亏分位数 = 用户排名 ÷ 用户总数，其中用户排名按基础排序值从高到低排序，排名 1 为最高优先级。</span>
+        <ol>
+          <li>ADL 减仓用户列表按全局候选用户池统一计算排序。</li>
+          <li>页面筛选仅影响展示结果，不改变用户在当前排序中的全局位置。</li>
+          <li>盈亏百分比 = 未实现收益 ÷ 绝对值(名目仓位)。</li>
+          <li>有效杠杆 = 绝对值(名目仓位) ÷ (钱包余额 + 未实现收益)；当钱包余额 + 未实现收益小于等于 0 时，分母按 1 处理。</li>
+          <li>盈亏百分比大于等于 0 时，基础排序值 = 盈亏百分比 × 有效杠杆；盈亏百分比小于 0 时，基础排序值 = 盈亏百分比 ÷ 有效杠杆。</li>
+          <li>杠杆盈亏分位数 = 用户排名 ÷ 用户总数，其中用户排名按基础排序值从高到低排序，排名 1 为最高优先级。</li>
+        </ol>
       </div>
       <div class="spec-card">
         <strong>30天ADL减仓次数 / 30天ADL减仓金额</strong>
-        <span>30天ADL减仓次数指当前时间向前滚动 30 个自然日内该用户累计被 ADL 的次数；30天ADL减仓金额指同一时间范围内该用户累计被 ADL 的减仓金额绝对值总和，单位为 USDT。</span>
+        <ol>
+          <li>30天ADL减仓次数：指当前时间向前滚动 30 个自然日内，该用户累计被 ADL 的次数。</li>
+          <li>30天ADL减仓金额：指同一时间范围内，该用户累计被 ADL 的减仓金额绝对值总和，单位为 USDT。</li>
+        </ol>
       </div>
       <div class="spec-card">
         <strong>公平修正公式</strong>
-        <span>为避免短期内同一批高盈利用户被重复减仓过多次，列表在基础排序值之上追加公平修正。次数惩罚分位值 = (用户总数 - 30天ADL减仓次数排名 + 1) ÷ 用户总数，其中次数排名按 30 天 ADL 减仓次数从高到低排序；金额惩罚分位值 = (用户总数 - 30天ADL减仓金额排名 + 1) ÷ 用户总数，其中金额排名按 30 天 ADL 减仓金额从高到低排序。公平调节系数 = 1 + 0.35 × 次数惩罚分位值 + 0.15 × 金额惩罚分位值。最终综合排序值：当基础排序值大于等于 0 时，综合排序值 = 基础排序值 ÷ 公平调节系数；当基础排序值小于 0 时，综合排序值 = 基础排序值 × 公平调节系数。示例：若用户总数为 10，某用户 30天ADL减仓次数排名第 1，次数惩罚分位值 = 1；30天ADL减仓金额排名第 1，金额惩罚分位值 = 1；则公平调节系数 = 1 + 0.35 × 1 + 0.15 × 1 = 1.5。若该用户基础排序值为 0.40645161，则综合排序值 = 0.40645161 ÷ 1.5 = 0.27096774。需要明确的是：次数越多、金额越大，对应的分位值越大，公平调节系数也越大，排序就越有可能往后延；也就是平台会优先降低这些近 30 天已被频繁 ADL、或累计承担较大 ADL 金额用户的再次触发优先级。页面最终按综合排序值从高到低排序；若综合排序值相同，则按最新减仓时间倒序，再按用户ID倒序。次数权重大于金额权重，是为了优先减少同一用户在短期内被重复 ADL 的概率；金额仅作次级修正，避免大仓位用户因名义仓位更大而被过度惩罚。点击列表中的分数，可查看该用户的名目仓位、未实现收益、钱包余额、盈亏百分比、有效杠杆、次数分位值、金额分位值、公平调节系数与最终综合排序值。</span>
+        <ol>
+          <li>系统在 ADL 触发时，会按基础排序值与公平修正公式计算当次 ADL 的排序值，并将结果快照写入减仓记录。</li>
+          <li>次数惩罚分位值 = (用户总数 - 30天ADL减仓次数排名 + 1) ÷ 用户总数；次数排名按 30 天 ADL 减仓次数从高到低排序。</li>
+          <li>金额惩罚分位值 = (用户总数 - 30天ADL减仓金额排名 + 1) ÷ 用户总数；金额排名按 30 天 ADL 减仓金额从高到低排序。</li>
+          <li>公平调节系数 = 1 + 0.35 × 次数惩罚分位值 + 0.15 × 金额惩罚分位值。</li>
+          <li>基础排序值大于等于 0 时，综合排序值 = 基础排序值 ÷ 公平调节系数；基础排序值小于 0 时，综合排序值 = 基础排序值 × 公平调节系数。</li>
+          <li>示例：若用户总数为 10，某用户 30天ADL减仓次数排名第 1，30天ADL减仓金额排名第 1，则次数惩罚分位值 = 1，金额惩罚分位值 = 1，公平调节系数 = 1.5。</li>
+          <li>若该用户基础排序值 = 0.40645161，则综合排序值 = 0.40645161 ÷ 1.5 = 0.27096774。</li>
+          <li>次数越多、金额越大，则公平调节系数越大，排序越可能向后延。</li>
+          <li>减仓列表展示的“ADL时排序值”即当次 ADL 触发时落库的排序快照值，不随当前页面实时排序重新计算。</li>
+          <li>点击“ADL时排序值”可查看参与该次排序的相关计算参数与公式。</li>
+        </ol>
       </div>
       <div class="spec-card">
-        <strong>盈利阈值(%)</strong>
-        <span>触发盈利减仓的盈利率阈值，达到阈值后触发自动减仓处置。展示为百分比整数。</span>
+        <strong>用户账号 / 类型 / 减仓次数 / ADL时排序值 / 最新减仓时间</strong>
+        <ol>
+          <li>用户账号：表示平台内该用户的登录账号或展示账号。</li>
+          <li>类型：固定取值为“自动ADL / 手动ADL”。</li>
+          <li>减仓次数：表示该用户在当前交易对下累计被执行 ADL 减仓的次数，展示为整数；该字段当前不在减仓列表中展示。</li>
+          <li>ADL时排序值：表示该条减仓记录在实际触发 ADL 时计算并落库的排序值快照，最多展示 8 位小数。</li>
+          <li>最新减仓时间：表示该用户最近一次发生 ADL 减仓的时间，格式为 `YYYY-MM-DD HH:mm:ss`，也是减仓列表默认第一排序字段。</li>
+        </ol>
       </div>
       <div class="spec-card">
-        <strong>减仓比例(%)</strong>
-        <span>每次触发减仓时对持仓进行的减仓比例，展示为百分比整数。</span>
+        <strong>减仓前用户未实现盈亏 / 减仓前盈利率 / 此次减仓盈利率</strong>
+        <ol>
+          <li>减仓前用户未实现盈亏：表示该次 ADL 触发前，用户在该持仓上的未实现盈亏金额，单位为 USDT。</li>
+          <li>减仓前盈利率 = 减仓前用户未实现盈亏 ÷ 减仓前持仓数量 × 100%。</li>
+          <li>此次减仓盈利率 = 此次减仓盈亏 ÷ 此次减仓数量 × 100%。</li>
+          <li>此次减仓盈亏的计算方向与手动ADL减仓弹窗保持一致：多仓按（减仓时价格 - 持仓均价）× 此次减仓数量，空仓按（持仓均价 - 减仓时价格）× 此次减仓数量。</li>
+          <li>减仓列表优先展示最新一笔减仓订单记录中的上述三个值；若订单明细不存在，则可按当前用户汇总持仓数据回退计算展示。</li>
+        </ol>
       </div>
       <div class="spec-card">
         <strong>减仓已实现盈亏(USDT)</strong>
-        <span>该用户在该交易对下因 ADL 减仓产生的累计已实现盈亏，正数表示盈利，负数表示亏损。</span>
+        <ol>
+          <li>该字段表示该用户在该交易对下因 ADL 减仓产生的累计已实现盈亏。</li>
+          <li>大于 0 表示盈利，小于 0 表示亏损。</li>
+        </ol>
       </div>
       <div class="spec-card">
         <strong>跳转到详情</strong>
-        <span>点击“订单记录/成交记录”进入减仓详情页，默认打开对应 Tab，并显示该用户在该交易对下的明细记录。</span>
+        <ol>
+          <li>点击“订单记录”按钮时，执行跳转步骤：先取当前行的 `交易对` 和 `用户ID`，拼接得到 `activeUserKey = 交易对 + "|" + 用户ID`。</li>
+          <li>点击“订单记录”按钮时，传递参数 `activeUserKey` 与 `tab = orders`。</li>
+          <li>点击“成交记录”按钮时，传递参数 `activeUserKey` 与 `tab = fills`。</li>
+          <li>进入详情页后，顶部汇总按 `activeUserKey` 回查用户汇总数据生成。</li>
+          <li>进入详情页后，页签默认按 `tab` 参数激活；`orders` 对应“用户减仓订单记录”，`fills` 对应“用户减仓成交记录”。</li>
+          <li>切换详情页时，当前详情页分页重置为第 1 页。</li>
+          <li>日期筛选条件如果已有输入值，则继续沿用；若为空，则默认不过滤。</li>
+          <li>若当前用户在当前交易对下无对应记录，则详情页展示空列表，不报错、不跳回上一页。</li>
+        </ol>
       </div>
       <div class="spec-card">
         <strong>分页</strong>
-        <span>当减仓列表总数大于 8 条时分页展示，每页固定 8 条，支持上一页和下一页切换。</span>
+        <ol>
+          <li>当减仓列表总数大于 8 条时分页展示。</li>
+          <li>每页固定展示 8 条。</li>
+          <li>支持上一页和下一页切换。</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="spec-page" data-spec-page="adl-current-users">
+      <div class="spec-card">
+        <strong>ADL当前用户列表</strong>
+        <ol>
+          <li>本页按用户维度展示当前进入 ADL 观察范围的用户列表。</li>
+          <li>列表字段包含：用户UID、当前持仓总额、持仓未实现盈利总额、用户历史持仓数、用户已实现盈利总额。</li>
+          <li>本页默认按持仓未实现盈利总额倒序排列；若相同，则按最近更新时间倒序，再按用户UID倒序。</li>
+        </ol>
+      </div>
+      <div class="spec-card">
+        <strong>字段定义</strong>
+        <ol>
+          <li>当前持仓总额：表示该用户当前所有币对、所有方向持仓的名义价值总和，单位为 USDT。</li>
+          <li>持仓未实现盈利总额：表示该用户当前所有持仓未实现盈亏的汇总结果，单位为 USDT。</li>
+          <li>用户历史持仓数：表示该用户历史上出现过持仓或发生过 ADL 记录的交易对数量，按去重后的交易对数统计。</li>
+          <li>用户已实现盈利总额：表示该用户历史 ADL 已实现盈亏的累计结果，单位为 USDT。</li>
+        </ol>
+      </div>
+      <div class="spec-card">
+        <strong>操作-详情</strong>
+        <ol>
+          <li>点击“详情”后进入“用户详情”页。</li>
+          <li>跳转时传递 `userId`，默认打开“用户减仓订单记录”页签。</li>
+          <li>返回按钮默认返回“ADL当前用户列表”。</li>
+        </ol>
+      </div>
+      <div class="spec-card">
+        <strong>分页</strong>
+        <ol>
+          <li>当列表总数大于 8 条时分页展示。</li>
+          <li>每页固定展示 8 条。</li>
+          <li>支持上一页和下一页切换。</li>
+        </ol>
       </div>
     </div>
 
     <div class="spec-page" data-spec-page="adl-detail">
       <div class="spec-card">
-        <strong>减仓详情</strong>
-        <span>详情页顶部展示用户减仓信息汇总（交易对、用户ID、用户账号、盈利阈值、减仓比例、减仓次数、累计已实现盈亏、最新减仓时间）。下方通过 Tab 切换展示订单记录与成交记录，并支持按日期区间筛选。</span>
+        <strong>用户详情</strong>
+        <ol>
+          <li>本页用于展示某一用户维度的 ADL 详情信息。</li>
+          <li>页面顶部展示用户汇总信息：用户UID、用户账号、当前持仓总额、持仓未实现盈利总额、用户历史持仓数、用户已实现盈利总额、最近更新时间。</li>
+          <li>页面中部新增“用户当前持仓列表”，展示该用户当前所有币对持仓，并支持在对应持仓上执行手动ADL减仓。</li>
+          <li>顶部用户统计数据跟随页面顶部“日 / 周 / 月 / 总”统计维度切换。</li>
+          <li>下方通过 Tab 切换展示订单记录与成交记录，并支持按日期区间筛选。</li>
+          <li>明细列表是否展示某条记录，以当前 Tab 和日期筛选条件共同决定。</li>
+          <li>订单记录与成交记录默认均按记录时间倒序排列，最新记录优先展示。</li>
+        </ol>
+      </div>
+      <div class="spec-card">
+        <strong>顶部汇总字段定义</strong>
+        <ol>
+          <li>用户UID：表示当前查看明细所属的唯一用户标识。</li>
+          <li>用户账号：表示该用户的展示账号。</li>
+          <li>当前持仓总额：表示该用户当前所有持仓价值总和，单位为 USDT。</li>
+          <li>持仓未实现盈利总额：表示该用户当前所有持仓未实现盈亏汇总结果，单位为 USDT。</li>
+          <li>用户历史持仓数：表示该用户历史上出现过持仓或发生过 ADL 的交易对数量。</li>
+          <li>用户已实现盈利总额：表示该用户按顶部当前统计维度汇总得到的 ADL 已实现盈亏金额。</li>
+          <li>最近更新时间：表示当前统计维度或当前持仓数据内最近一次更新时间，格式为 `YYYY-MM-DD HH:mm:ss`。</li>
+          <li>若顶部切换统计维度，则上述用户统计字段同步切换到对应周期口径。</li>
+        </ol>
+      </div>
+      <div class="spec-card">
+        <strong>用户当前持仓列表</strong>
+        <ol>
+          <li>本列表展示该用户当前所有币对持仓。</li>
+          <li>字段包括：交易对、保证金模式、持仓方向、持仓数量、开仓均价、标记价格、未实现盈亏、杠杆、最后更新时间、操作。</li>
+          <li>保证金模式取值为“全仓 / 逐仓”，杠杆取值以后端持仓返回结果为准。</li>
+          <li>操作中的“手动ADL减仓”直接打开对应持仓的手动ADL减仓弹窗。</li>
+          <li>列表默认按最后更新时间倒序展示；若相同，则按交易对倒序展示。</li>
+        </ol>
+      </div>
+      <div class="spec-card">
+        <strong>日期筛选输入项定义</strong>
+        <ol>
+          <li>日期开始：按记录日期大于等于开始日期过滤。</li>
+          <li>日期结束：按记录日期小于等于结束日期过滤。</li>
+          <li>开始日期和结束日期均为空时，默认不过滤。</li>
+          <li>点击“查询”后，按日期范围刷新当前 Tab 列表，并从第一页开始展示。</li>
+          <li>点击“重置”后，清空开始日期与结束日期，并重新加载当前 Tab 第一页。</li>
+        </ol>
       </div>
       <div class="spec-card">
         <strong>订单记录</strong>
-        <span>展示每笔减仓订单的关键字段：减仓时间、开仓方向、减仓数量(USDT)、减仓时实时价格、订单成交均价、减仓盈亏(USDT)、减仓后盈利率(%)、订单状态。其中减仓时实时价格、订单成交均价、减仓数量以后端币对配置与订单返回结果为准；涉及盈亏金额展示时，最多保留 8 位小数，末尾为 0 的小数位不展示。</span>
+        <ol>
+          <li>订单记录展示字段：交易对、减仓时间、开仓方向、减仓数量(USDT)、减仓时实时价格、订单成交均价、减仓前用户未实现盈亏(USDT)、减仓前盈利率(%)、此次减仓盈利率(%)、减仓盈亏(USDT)、订单状态。</li>
+          <li>减仓时实时价格、订单成交均价、减仓数量以后端币对配置与订单返回结果为准。</li>
+          <li>减仓前用户未实现盈亏表示该笔订单触发前，用户在该持仓上的未实现盈亏金额。</li>
+          <li>减仓前盈利率 = 减仓前用户未实现盈亏 ÷ 减仓前持仓数量 × 100%。</li>
+          <li>此次减仓盈利率 = 此次减仓盈亏 ÷ 此次减仓数量 × 100%。</li>
+          <li>此次减仓盈亏计算方向与手动ADL减仓弹窗一致：多仓按（减仓时价格 - 持仓均价）× 此次减仓数量；空仓按（持仓均价 - 减仓时价格）× 此次减仓数量。</li>
+          <li>订单记录默认按减仓时间倒序排列。</li>
+          <li>涉及盈亏金额与盈利率展示时，最多保留 8 位小数，末尾为 0 的小数位不展示。</li>
+        </ol>
       </div>
       <div class="spec-card">
         <strong>成交记录</strong>
-        <span>展示订单的成交明细：成交ID、订单ID、交易对、成交时间、成交数量(USDT)、成交价格、成交金额(USDT)、手续费(USDT)、成交盈亏(USDT)。其中成交价格、成交数量、成交金额以后端成交回报为准；涉及盈亏与金额字段时，最多保留 8 位小数，末尾为 0 的小数位不展示。</span>
+        <ol>
+          <li>成交记录展示字段：成交ID、订单ID、交易对、成交时间、成交数量(USDT)、成交价格、成交金额(USDT)、手续费(USDT)、成交盈亏(USDT)。</li>
+          <li>成交价格、成交数量、成交金额以后端成交回报为准。</li>
+          <li>涉及盈亏与金额字段时，最多保留 8 位小数，末尾为 0 的小数位不展示。</li>
+        </ol>
       </div>
       <div class="spec-card">
-        <strong>日期筛选</strong>
-        <span>日期开始与日期结束按明细记录的发生日期筛选；开始日期为大于等于，结束日期为小于等于。若未选择日期则默认不过滤。</span>
+        <strong>订单状态 / 手续费</strong>
+        <ol>
+          <li>订单状态：表示该减仓订单当前处理结果，原型演示中可展示为“已完成 / 处理中 / 已取消”等枚举值，实际取值以后端订单状态返回为准。</li>
+          <li>手续费：表示对应成交记录产生的手续费金额，单位为 USDT，最多展示 8 位小数，末尾为 0 的小数位不展示。</li>
+        </ol>
       </div>
       <div class="spec-card">
         <strong>分页</strong>
-        <span>当详情明细记录总数大于 8 条时分页展示，每页固定 8 条，支持上一页和下一页切换。</span>
+        <ol>
+          <li>当详情明细记录总数大于 8 条时分页展示。</li>
+          <li>每页固定展示 8 条。</li>
+          <li>支持上一页和下一页切换。</li>
+        </ol>
+      </div>
+      <div class="spec-card">
+        <strong>结果弹窗字段定义</strong>
+        <ol>
+          <li>风险预警结果弹窗中的币对、平台最大可亏损额、当前多仓亏损、当前空仓亏损、风险比率、当前优先ADL方向、当前状态、30天已ADL次数，分别对应当前币对配置表中的交易对、平台总亏损阈值、多仓当前亏损、空仓当前亏损、总亏损与阈值的比率、当前优先处理方向、状态结果、近30天ADL次数。</li>
+          <li>分数计算详情弹窗中的名目仓位、未实现收益、钱包余额、盈亏百分比、有效杠杆、基础排序值、次数惩罚分位值、金额惩罚分位值、公平调节系数、综合排序值，分别对应排序公式中的原始入参、中间计算结果与最终输出结果。</li>
+          <li>两个结果弹窗均用于开发和测试逐项核对排序链路与风控链路。</li>
+        </ol>
       </div>
     </div>
   </aside>
@@ -1135,7 +1712,7 @@
             <input id="mam-close-qty" type="number" min="0" step="0.01" />
           </div>
         </div>
-        <div class="hint">平仓数量默认按 USDT 口径输入，不能大于当前持仓数量。平仓后用户盈亏显示按持仓方向计算：多仓按（破产价 - 持仓均价）÷ 持仓均价 × 平仓数量计算，空仓按（持仓均价 - 破产价）÷ 持仓均价 × 平仓数量计算。</div>
+        <div class="hint">平仓数量默认按 USDT 口径输入，平仓数量不能大于当前持仓数量。平仓后用户盈亏显示按持仓方向计算：多仓按（破产价 - 持仓均价）× 平仓数量计算，空仓按（持仓均价 - 破产价）× 平仓数量计算。</div>
         <div class="modal-field">
           <label for="mam-after-pnl">平仓后用户盈亏显示</label>
           <input id="mam-after-pnl" type="text" readonly />
@@ -1179,12 +1756,14 @@
   <script>
     (function () {
       const navButtons = Array.from(document.querySelectorAll('.nav-btn'));
+      const navGroups = Array.from(document.querySelectorAll('.nav-group'));
       const pages = Array.from(document.querySelectorAll('.page'));
       const specPages = Array.from(document.querySelectorAll('.spec-page'));
       const specSidebar = document.getElementById('spec-sidebar');
       const specToggle = document.getElementById('spec-toggle');
       const overviewTitle = document.getElementById('overview-title');
       const overviewGrid = document.getElementById('overview-grid');
+      const overviewPairFilter = document.getElementById('overview-pair-filter');
       const pills = Array.from(document.querySelectorAll('.pill'));
 
       const pcFilterKey = document.getElementById('pc-filter-key');
@@ -1212,6 +1791,9 @@
 
       const alFilterPair = document.getElementById('al-filter-pair');
       const alFilterUser = document.getElementById('al-filter-user');
+      const alFilterType = document.getElementById('al-filter-type');
+      const alFilterStart = document.getElementById('al-filter-start');
+      const alFilterEnd = document.getElementById('al-filter-end');
       const alApply = document.getElementById('al-apply');
       const alReset = document.getElementById('al-reset');
       const alTbody = document.getElementById('al-tbody');
@@ -1220,8 +1802,19 @@
       const alNext = document.getElementById('al-next');
       const alPage = document.getElementById('al-page');
 
+      const acuFilterUser = document.getElementById('acu-filter-user');
+      const acuApply = document.getElementById('acu-apply');
+      const acuReset = document.getElementById('acu-reset');
+      const acuTbody = document.getElementById('acu-tbody');
+      const acuSummary = document.getElementById('acu-summary');
+      const acuPrev = document.getElementById('acu-prev');
+      const acuNext = document.getElementById('acu-next');
+      const acuPage = document.getElementById('acu-page');
+
       const backToList = document.getElementById('back-to-list');
       const detailKpis = document.getElementById('detail-kpis');
+      const detailPositionTbody = document.getElementById('detail-position-tbody');
+      const detailPositionSummary = document.getElementById('detail-position-summary');
       const tabs = Array.from(document.querySelectorAll('.tab'));
       const adDateStart = document.getElementById('ad-date-start');
       const adDateEnd = document.getElementById('ad-date-end');
@@ -1237,9 +1830,11 @@
       const cmClose = document.getElementById('cm-close');
       const cmPair = document.getElementById('cm-pair');
       const cmMaxLoss = document.getElementById('cm-max-loss');
-      const cmFutureLoss = document.getElementById('cm-future-loss');
       const cmLongBankruptcyOffset = document.getElementById('cm-long-bankruptcy-offset');
       const cmShortBankruptcyOffset = document.getElementById('cm-short-bankruptcy-offset');
+      const cmSingleReduceMode = document.getElementById('cm-single-reduce-mode');
+      const cmSingleReduceRatioWrap = document.getElementById('cm-single-reduce-ratio-wrap');
+      const cmSingleReduceRatio = document.getElementById('cm-single-reduce-ratio');
       const cmRiskRate = document.getElementById('cm-risk-rate');
       const cmEstProfit = document.getElementById('cm-est-profit');
       const cmReset = document.getElementById('cm-reset');
@@ -1280,9 +1875,12 @@
         pcPage: 1,
         puPage: 1,
         alPage: 1,
+        acuPage: 1,
         adPage: 1,
         adTab: 'orders',
         activeUserKey: '',
+        activeDetailUserId: '',
+        activeDetailSource: 'adl-list',
         activePair: 'BTC/USDT',
         activeManualKey: ''
       };
@@ -1290,37 +1888,49 @@
       const pairUniverse = ['BTC/USDT', 'ETH/USDT', 'BNB/USDT', 'SOL/USDT', 'XRP/USDT', 'DOGE/USDT', 'SUI/USDT', 'AVAX/USDT', 'ADA/USDT', 'LINK/USDT', 'TON/USDT', 'TRX/USDT'];
 
       const pairConfigs = [
-        { pair: 'BTC/USDT', maxLongLoss: 500000, futureLoss: -485200, adlCount: 3, pnl: 28500, status: 'warn', cycle: 'day', longBankruptcyOffset: 5, shortBankruptcyOffset: 5 },
-        { pair: 'ETH/USDT', maxLongLoss: 300000, futureLoss: -125800, adlCount: 1, pnl: 15200, status: 'ok', cycle: 'day', longBankruptcyOffset: 4.5, shortBankruptcyOffset: 4.5 },
-        { pair: 'BNB/USDT', maxLongLoss: 200000, futureLoss: -198500, adlCount: 2, pnl: 8300, status: 'warn', cycle: 'week', longBankruptcyOffset: 5.5, shortBankruptcyOffset: 5.5 },
-        { pair: 'SOL/USDT', maxLongLoss: 150000, futureLoss: -65200, adlCount: 0, pnl: 0, status: 'ok', cycle: 'month', longBankruptcyOffset: 6, shortBankruptcyOffset: 6 },
-        { pair: 'XRP/USDT', maxLongLoss: 120000, futureLoss: -21500, adlCount: 0, pnl: 0, status: 'ok', cycle: 'total', longBankruptcyOffset: 4, shortBankruptcyOffset: 4 },
-        { pair: 'DOGE/USDT', maxLongLoss: 90000, futureLoss: -55800, adlCount: 1, pnl: 4200, status: 'warn', cycle: 'day', longBankruptcyOffset: 6.5, shortBankruptcyOffset: 6.5 },
-        { pair: 'SUI/USDT', maxLongLoss: 70000, futureLoss: -7200, adlCount: 0, pnl: 0, status: 'ok', cycle: 'week', longBankruptcyOffset: 4.2, shortBankruptcyOffset: 4.2 },
-        { pair: 'AVAX/USDT', maxLongLoss: 80000, futureLoss: -18200, adlCount: 0, pnl: 0, status: 'ok', cycle: 'month', longBankruptcyOffset: 4.8, shortBankruptcyOffset: 4.8 },
-        { pair: 'ADA/USDT', maxLongLoss: 60000, futureLoss: -9500, adlCount: 0, pnl: 0, status: 'ok', cycle: 'total', longBankruptcyOffset: 3.8, shortBankruptcyOffset: 3.8 },
-        { pair: 'LINK/USDT', maxLongLoss: 65000, futureLoss: -13600, adlCount: 0, pnl: 0, status: 'ok', cycle: 'day', longBankruptcyOffset: 4.3, shortBankruptcyOffset: 4.3 },
-        { pair: 'TON/USDT', maxLongLoss: 72000, futureLoss: -54000, adlCount: 1, pnl: 6800, status: 'warn', cycle: 'week', longBankruptcyOffset: 5.2, shortBankruptcyOffset: 5.2 },
-        { pair: 'TRX/USDT', maxLongLoss: 50000, futureLoss: -7800, adlCount: 0, pnl: 0, status: 'ok', cycle: 'month', longBankruptcyOffset: 3.5, shortBankruptcyOffset: 3.5 }
+        { pair: 'BTC/USDT', maxPlatformLoss: 500000, currentLongLoss: -285200, currentShortLoss: -200000, adlCount: 3, pnl: 28500, status: 'warn', cycle: 'day', longBankruptcyOffset: 5, shortBankruptcyOffset: 5, singleReduceMode: 'all', singleReduceRatio: null },
+        { pair: 'ETH/USDT', maxPlatformLoss: 300000, currentLongLoss: -72800, currentShortLoss: -53000, adlCount: 1, pnl: 15200, status: 'ok', cycle: 'day', longBankruptcyOffset: 4.5, shortBankruptcyOffset: 4.5, singleReduceMode: 'ratio', singleReduceRatio: 25 },
+        { pair: 'BNB/USDT', maxPlatformLoss: 200000, currentLongLoss: -121500, currentShortLoss: -77000, adlCount: 2, pnl: 8300, status: 'warn', cycle: 'week', longBankruptcyOffset: 5.5, shortBankruptcyOffset: 5.5, singleReduceMode: 'ratio', singleReduceRatio: 30 },
+        { pair: 'SOL/USDT', maxPlatformLoss: 150000, currentLongLoss: -35200, currentShortLoss: -30000, adlCount: 0, pnl: 0, status: 'ok', cycle: 'month', longBankruptcyOffset: 6, shortBankruptcyOffset: 6, singleReduceMode: 'all', singleReduceRatio: null },
+        { pair: 'XRP/USDT', maxPlatformLoss: 120000, currentLongLoss: -8500, currentShortLoss: -13000, adlCount: 0, pnl: 0, status: 'ok', cycle: 'total', longBankruptcyOffset: 4, shortBankruptcyOffset: 4, singleReduceMode: 'ratio', singleReduceRatio: 15 },
+        { pair: 'DOGE/USDT', maxPlatformLoss: 90000, currentLongLoss: -41800, currentShortLoss: -14000, adlCount: 1, pnl: 4200, status: 'warn', cycle: 'day', longBankruptcyOffset: 6.5, shortBankruptcyOffset: 6.5, singleReduceMode: 'ratio', singleReduceRatio: 20 },
+        { pair: 'SUI/USDT', maxPlatformLoss: 70000, currentLongLoss: -3200, currentShortLoss: -4000, adlCount: 0, pnl: 0, status: 'ok', cycle: 'week', longBankruptcyOffset: 4.2, shortBankruptcyOffset: 4.2, singleReduceMode: 'all', singleReduceRatio: null },
+        { pair: 'AVAX/USDT', maxPlatformLoss: 80000, currentLongLoss: -7200, currentShortLoss: -11000, adlCount: 0, pnl: 0, status: 'ok', cycle: 'month', longBankruptcyOffset: 4.8, shortBankruptcyOffset: 4.8, singleReduceMode: 'ratio', singleReduceRatio: 18 },
+        { pair: 'ADA/USDT', maxPlatformLoss: 60000, currentLongLoss: -5200, currentShortLoss: -4300, adlCount: 0, pnl: 0, status: 'ok', cycle: 'total', longBankruptcyOffset: 3.8, shortBankruptcyOffset: 3.8, singleReduceMode: 'all', singleReduceRatio: null },
+        { pair: 'LINK/USDT', maxPlatformLoss: 65000, currentLongLoss: -7600, currentShortLoss: -6000, adlCount: 0, pnl: 0, status: 'ok', cycle: 'day', longBankruptcyOffset: 4.3, shortBankruptcyOffset: 4.3, singleReduceMode: 'ratio', singleReduceRatio: 12.5 },
+        { pair: 'TON/USDT', maxPlatformLoss: 72000, currentLongLoss: -36000, currentShortLoss: -18000, adlCount: 1, pnl: 6800, status: 'warn', cycle: 'week', longBankruptcyOffset: 5.2, shortBankruptcyOffset: 5.2, singleReduceMode: 'ratio', singleReduceRatio: 35 },
+        { pair: 'TRX/USDT', maxPlatformLoss: 50000, currentLongLoss: -3100, currentShortLoss: -4700, adlCount: 0, pnl: 0, status: 'ok', cycle: 'month', longBankruptcyOffset: 3.5, shortBankruptcyOffset: 3.5, singleReduceMode: 'all', singleReduceRatio: null }
       ];
 
       const adlUsers = [
-        { pair: 'BTC/USDT', userId: '10001', account: 'user_btc_001', profitThreshold: 50, reduceRatio: 20, reduceTimes: 3, realizedPnl: 28500, lastAt: '2025-07-15 14:30:00', walletBalance: 18400, nominalPosition: 120000, unrealizedPnl: 12600, adl30dCount: 3, adl30dAmount: 28500 },
-        { pair: 'BTC/USDT', userId: '10002', account: 'user_btc_002', profitThreshold: 60, reduceRatio: 25, reduceTimes: 5, realizedPnl: 45200, lastAt: '2025-07-15 15:45:00', walletBalance: 16200, nominalPosition: 135000, unrealizedPnl: 22100, adl30dCount: 5, adl30dAmount: 45200 },
-        { pair: 'BTC/USDT', userId: '10003', account: 'user_btc_003', profitThreshold: 45, reduceRatio: 30, reduceTimes: 2, realizedPnl: 15800, lastAt: '2025-07-15 12:20:00', walletBalance: 14900, nominalPosition: 96000, unrealizedPnl: 9800, adl30dCount: 2, adl30dAmount: 15800 },
-        { pair: 'BTC/USDT', userId: '10004', account: 'user_btc_004', profitThreshold: 55, reduceRatio: 15, reduceTimes: 1, realizedPnl: 8200, lastAt: '2025-07-15 09:30:00', walletBalance: 13200, nominalPosition: 72000, unrealizedPnl: 6100, adl30dCount: 1, adl30dAmount: 8200 },
-        { pair: 'BTC/USDT', userId: '10005', account: 'user_btc_005', profitThreshold: 40, reduceRatio: 35, reduceTimes: 4, realizedPnl: 22600, lastAt: '2025-07-15 16:00:00', walletBalance: 17600, nominalPosition: 110000, unrealizedPnl: 14200, adl30dCount: 4, adl30dAmount: 22600 },
-        { pair: 'ETH/USDT', userId: '20001', account: 'user_eth_001', profitThreshold: 45, reduceRatio: 20, reduceTimes: 2, realizedPnl: 15200, lastAt: '2025-07-15 10:05:00', walletBalance: 9200, nominalPosition: 42000, unrealizedPnl: 1680, adl30dCount: 2, adl30dAmount: 15200 },
-        { pair: 'BNB/USDT', userId: '30001', account: 'user_bnb_001', profitThreshold: 55, reduceRatio: 18, reduceTimes: 2, realizedPnl: 8300, lastAt: '2025-07-14 18:24:00', walletBalance: 7800, nominalPosition: 28000, unrealizedPnl: 720, adl30dCount: 2, adl30dAmount: 8300 },
-        { pair: 'DOGE/USDT', userId: '40001', account: 'user_doge_001', profitThreshold: 35, reduceRatio: 30, reduceTimes: 1, realizedPnl: 4200, lastAt: '2025-07-15 08:12:00', walletBalance: 3400, nominalPosition: 15000, unrealizedPnl: 540, adl30dCount: 1, adl30dAmount: 4200 },
-        { pair: 'TON/USDT', userId: '50001', account: 'user_ton_001', profitThreshold: 48, reduceRatio: 22, reduceTimes: 1, realizedPnl: 6800, lastAt: '2025-07-15 11:40:00', walletBalance: 6200, nominalPosition: 23000, unrealizedPnl: 1380, adl30dCount: 1, adl30dAmount: 6800 }
+        { pair: 'BTC/USDT', userId: '10001', account: 'user_btc_001', adlType: 'auto', profitThreshold: 50, reduceRatio: 20, reduceTimes: 3, realizedPnl: 28500, lastAt: '2025-07-15 14:30:00', walletBalance: 18400, nominalPosition: 120000, unrealizedPnl: 12600, adl30dCount: 3, adl30dAmount: 28500 },
+        { pair: 'BTC/USDT', userId: '10002', account: 'user_btc_002', adlType: 'auto', profitThreshold: 60, reduceRatio: 25, reduceTimes: 5, realizedPnl: 45200, lastAt: '2025-07-15 15:45:00', walletBalance: 16200, nominalPosition: 135000, unrealizedPnl: 22100, adl30dCount: 5, adl30dAmount: 45200 },
+        { pair: 'BTC/USDT', userId: '10003', account: 'user_btc_003', adlType: 'auto', profitThreshold: 45, reduceRatio: 30, reduceTimes: 2, realizedPnl: 15800, lastAt: '2025-07-15 12:20:00', walletBalance: 14900, nominalPosition: 96000, unrealizedPnl: 9800, adl30dCount: 2, adl30dAmount: 15800 },
+        { pair: 'BTC/USDT', userId: '10004', account: 'user_btc_004', adlType: 'auto', profitThreshold: 55, reduceRatio: 15, reduceTimes: 1, realizedPnl: 8200, lastAt: '2025-07-15 09:30:00', walletBalance: 13200, nominalPosition: 72000, unrealizedPnl: 6100, adl30dCount: 1, adl30dAmount: 8200 },
+        { pair: 'BTC/USDT', userId: '10005', account: 'user_btc_005', adlType: 'auto', profitThreshold: 40, reduceRatio: 35, reduceTimes: 4, realizedPnl: 22600, lastAt: '2025-07-15 16:00:00', walletBalance: 17600, nominalPosition: 110000, unrealizedPnl: 14200, adl30dCount: 4, adl30dAmount: 22600 },
+        { pair: 'ETH/USDT', userId: '20001', account: 'user_eth_001', adlType: 'auto', profitThreshold: 45, reduceRatio: 20, reduceTimes: 2, realizedPnl: 15200, lastAt: '2025-07-15 10:05:00', walletBalance: 9200, nominalPosition: 42000, unrealizedPnl: 1680, adl30dCount: 2, adl30dAmount: 15200 },
+        { pair: 'BNB/USDT', userId: '30001', account: 'user_bnb_001', adlType: 'auto', profitThreshold: 55, reduceRatio: 18, reduceTimes: 2, realizedPnl: 8300, lastAt: '2025-07-14 18:24:00', walletBalance: 7800, nominalPosition: 28000, unrealizedPnl: 720, adl30dCount: 2, adl30dAmount: 8300 },
+        { pair: 'DOGE/USDT', userId: '40001', account: 'user_doge_001', adlType: 'auto', profitThreshold: 35, reduceRatio: 30, reduceTimes: 1, realizedPnl: 4200, lastAt: '2025-07-15 08:12:00', walletBalance: 3400, nominalPosition: 15000, unrealizedPnl: 540, adl30dCount: 1, adl30dAmount: 4200 },
+        { pair: 'TON/USDT', userId: '50001', account: 'user_ton_001', adlType: 'auto', profitThreshold: 48, reduceRatio: 22, reduceTimes: 1, realizedPnl: 6800, lastAt: '2025-07-15 11:40:00', walletBalance: 6200, nominalPosition: 23000, unrealizedPnl: 1380, adl30dCount: 1, adl30dAmount: 6800 },
+        { pair: 'BTC/USDT', userId: '10006', account: 'user_btc_006', adlType: 'manual', profitThreshold: 28, reduceRatio: 18, reduceTimes: 1, realizedPnl: 1360, lastAt: '2025-07-15 17:06:00', walletBalance: 6200, nominalPosition: 54000, unrealizedPnl: 980, adl30dCount: 1, adl30dAmount: 1360 },
+        { pair: 'ETH/USDT', userId: '20008', account: 'user_eth_008', adlType: 'manual', profitThreshold: 16, reduceRatio: 15, reduceTimes: 1, realizedPnl: 420, lastAt: '2025-07-15 17:18:00', walletBalance: 5800, nominalPosition: 26000, unrealizedPnl: 250, adl30dCount: 1, adl30dAmount: 420 },
+        { pair: 'SOL/USDT', userId: '60001', account: 'user_sol_001', adlType: 'manual', profitThreshold: 22, reduceRatio: 20, reduceTimes: 1, realizedPnl: 760, lastAt: '2025-07-15 17:32:00', walletBalance: 4100, nominalPosition: 19000, unrealizedPnl: 480, adl30dCount: 1, adl30dAmount: 760 }
       ];
 
       const orderRecords = {
         'BTC/USDT|10001': [
-          { at: '2025-07-15 14:30:00', side: '多仓', qty: 5000, markPrice: 67500, avgPrice: 67480, pnl: 8500, afterProfitRate: 45, status: '已完成' },
-          { at: '2025-07-15 12:15:00', side: '空仓', qty: 8000, markPrice: 67200, avgPrice: 67185, pnl: 12000, afterProfitRate: 48, status: '已完成' },
-          { at: '2025-07-15 10:00:00', side: '多仓', qty: 6000, markPrice: 67000, avgPrice: 66990, pnl: 8000, afterProfitRate: 52, status: '已完成' }
+          { at: '2025-07-15 14:30:00', side: '多仓', qty: 5000, markPrice: 67500, avgPrice: 67480, beforeUnrealizedPnl: 12600, beforeProfitRate: 10.5, currentReduceProfitRate: 170, pnl: 8500, status: '已完成' },
+          { at: '2025-07-15 12:15:00', side: '空仓', qty: 8000, markPrice: 67200, avgPrice: 67185, beforeUnrealizedPnl: 15400, beforeProfitRate: 12.83, currentReduceProfitRate: 150, pnl: 12000, status: '已完成' },
+          { at: '2025-07-15 10:00:00', side: '多仓', qty: 6000, markPrice: 67000, avgPrice: 66990, beforeUnrealizedPnl: 11200, beforeProfitRate: 9.33, currentReduceProfitRate: 133.33, pnl: 8000, status: '已完成' }
+        ],
+        'BTC/USDT|10006': [
+          { at: '2025-07-15 17:06:00', side: '空仓', qty: 9720, markPrice: 67380, avgPrice: 68220, beforeUnrealizedPnl: 980, beforeProfitRate: 1.81, currentReduceProfitRate: 14, pnl: 1360, status: '已完成' }
+        ],
+        'ETH/USDT|20008': [
+          { at: '2025-07-15 17:18:00', side: '空仓', qty: 3900, markPrice: 3260, avgPrice: 3320, beforeUnrealizedPnl: 250, beforeProfitRate: 0.96, currentReduceProfitRate: 10.77, pnl: 420, status: '已完成' }
+        ],
+        'SOL/USDT|60001': [
+          { at: '2025-07-15 17:32:00', side: '多仓', qty: 3800, markPrice: 154, avgPrice: 148, beforeUnrealizedPnl: 480, beforeProfitRate: 2.53, currentReduceProfitRate: 20, pnl: 760, status: '已完成' }
         ]
       };
 
@@ -1330,6 +1940,15 @@
           { fillId: 'TRD202507150002', orderId: 'ADL202507150001', pair: 'BTC/USDT', at: '2025-07-15 14:30:06', qty: 100, price: 67475, amount: 6747.5, fee: -0.07, pnl: 150 },
           { fillId: 'TRD202507150003', orderId: 'ADL202507150002', pair: 'BTC/USDT', at: '2025-07-15 12:15:10', qty: 8000, price: 67185, amount: 537480, fee: -3.57, pnl: 12000 },
           { fillId: 'TRD202507150004', orderId: 'ADL202507150003', pair: 'BTC/USDT', at: '2025-07-15 10:00:12', qty: 6000, price: 66990, amount: 401940, fee: -4.02, pnl: 8000 }
+        ],
+        'BTC/USDT|10006': [
+          { fillId: 'TRD202507151706001', orderId: 'ADL202507151706001', pair: 'BTC/USDT', at: '2025-07-15 17:06:05', qty: 9720, price: 67380, amount: 654933.6, fee: 0, pnl: 1360 }
+        ],
+        'ETH/USDT|20008': [
+          { fillId: 'TRD202507151718001', orderId: 'ADL202507151718001', pair: 'ETH/USDT', at: '2025-07-15 17:18:04', qty: 3900, price: 3260, amount: 12714000, fee: 0, pnl: 420 }
+        ],
+        'SOL/USDT|60001': [
+          { fillId: 'TRD202507151732001', orderId: 'ADL202507151732001', pair: 'SOL/USDT', at: '2025-07-15 17:32:03', qty: 3800, price: 154, amount: 585200, fee: 0, pnl: 760 }
         ]
       };
 
@@ -1338,16 +1957,16 @@
       const manualGoogleDemoCode = '624981';
 
       const pairPositions = [
-        { pair: 'BTC/USDT', userId: '10001', account: 'user_btc_001', side: '多仓', valueU: 120000, entryPrice: 63500, markPrice: 67480, upnl: 12600, leverage: 20, walletBalance: 18400, adl30dCount: 3, adl30dAmount: 28500, updatedAt: '2025-07-15 14:32:10' },
-        { pair: 'BTC/USDT', userId: '10006', account: 'user_btc_006', side: '空仓', valueU: 54000, entryPrice: 68220, markPrice: 67480, upnl: 980, leverage: 10, walletBalance: 6200, adl30dCount: 1, adl30dAmount: 3600, updatedAt: '2025-07-15 13:11:42' },
-        { pair: 'BTC/USDT', userId: '10008', account: 'user_btc_008', side: '多仓', valueU: 86000, entryPrice: 66110, markPrice: 67480, upnl: 1780, leverage: 25, walletBalance: 9800, adl30dCount: 0, adl30dAmount: 0, updatedAt: '2025-07-15 12:06:08' },
-        { pair: 'ETH/USDT', userId: '20001', account: 'user_eth_001', side: '多仓', valueU: 42000, entryPrice: 3150, markPrice: 3288, upnl: 1680, leverage: 15, walletBalance: 9200, adl30dCount: 2, adl30dAmount: 15200, updatedAt: '2025-07-15 10:12:09' },
-        { pair: 'BNB/USDT', userId: '30001', account: 'user_bnb_001', side: '空仓', valueU: 28000, entryPrice: 590, markPrice: 575, upnl: 720, leverage: 8, walletBalance: 7800, adl30dCount: 2, adl30dAmount: 8300, updatedAt: '2025-07-14 18:26:10' },
-        { pair: 'SOL/USDT', userId: '60001', account: 'user_sol_001', side: '多仓', valueU: 19000, entryPrice: 148, markPrice: 152, upnl: 480, leverage: 12, walletBalance: 4100, adl30dCount: 0, adl30dAmount: 0, updatedAt: '2025-07-15 09:01:30' },
-        { pair: 'DOGE/USDT', userId: '40001', account: 'user_doge_001', side: '多仓', valueU: 15000, entryPrice: 0.165, markPrice: 0.171, upnl: 540, leverage: 20, walletBalance: 3400, adl30dCount: 1, adl30dAmount: 4200, updatedAt: '2025-07-15 08:18:00' },
-        { pair: 'TON/USDT', userId: '50001', account: 'user_ton_001', side: '多仓', valueU: 23000, entryPrice: 7.12, markPrice: 7.55, upnl: 1380, leverage: 10, walletBalance: 6200, adl30dCount: 1, adl30dAmount: 6800, updatedAt: '2025-07-15 11:42:20' },
-        { pair: 'BTC/USDT', userId: '10009', account: 'user_btc_009', side: '多仓', valueU: 46000, entryPrice: 66830, markPrice: 67480, upnl: 450, leverage: 5, walletBalance: 11600, adl30dCount: 0, adl30dAmount: 0, updatedAt: '2025-07-15 15:01:14' },
-        { pair: 'ETH/USDT', userId: '20008', account: 'user_eth_008', side: '空仓', valueU: 26000, entryPrice: 3320, markPrice: 3288, upnl: 250, leverage: 6, walletBalance: 5800, adl30dCount: 0, adl30dAmount: 0, updatedAt: '2025-07-15 10:44:51' }
+        { pair: 'BTC/USDT', userId: '10001', account: 'user_btc_001', marginMode: '全仓', side: '多仓', valueU: 120000, entryPrice: 63500, markPrice: 67480, upnl: 12600, leverage: 20, walletBalance: 18400, adl30dCount: 3, adl30dAmount: 28500, updatedAt: '2025-07-15 14:32:10' },
+        { pair: 'BTC/USDT', userId: '10006', account: 'user_btc_006', marginMode: '逐仓', side: '空仓', valueU: 54000, entryPrice: 68220, markPrice: 67480, upnl: 980, leverage: 10, walletBalance: 6200, adl30dCount: 1, adl30dAmount: 3600, updatedAt: '2025-07-15 13:11:42' },
+        { pair: 'BTC/USDT', userId: '10008', account: 'user_btc_008', marginMode: '全仓', side: '多仓', valueU: 86000, entryPrice: 66110, markPrice: 67480, upnl: 1780, leverage: 25, walletBalance: 9800, adl30dCount: 0, adl30dAmount: 0, updatedAt: '2025-07-15 12:06:08' },
+        { pair: 'ETH/USDT', userId: '20001', account: 'user_eth_001', marginMode: '逐仓', side: '多仓', valueU: 42000, entryPrice: 3150, markPrice: 3288, upnl: 1680, leverage: 15, walletBalance: 9200, adl30dCount: 2, adl30dAmount: 15200, updatedAt: '2025-07-15 10:12:09' },
+        { pair: 'BNB/USDT', userId: '30001', account: 'user_bnb_001', marginMode: '全仓', side: '空仓', valueU: 28000, entryPrice: 590, markPrice: 575, upnl: 720, leverage: 8, walletBalance: 7800, adl30dCount: 2, adl30dAmount: 8300, updatedAt: '2025-07-14 18:26:10' },
+        { pair: 'SOL/USDT', userId: '60001', account: 'user_sol_001', marginMode: '逐仓', side: '多仓', valueU: 19000, entryPrice: 148, markPrice: 152, upnl: 480, leverage: 12, walletBalance: 4100, adl30dCount: 0, adl30dAmount: 0, updatedAt: '2025-07-15 09:01:30' },
+        { pair: 'DOGE/USDT', userId: '40001', account: 'user_doge_001', marginMode: '全仓', side: '多仓', valueU: 15000, entryPrice: 0.165, markPrice: 0.171, upnl: 540, leverage: 20, walletBalance: 3400, adl30dCount: 1, adl30dAmount: 4200, updatedAt: '2025-07-15 08:18:00' },
+        { pair: 'TON/USDT', userId: '50001', account: 'user_ton_001', marginMode: '逐仓', side: '多仓', valueU: 23000, entryPrice: 7.12, markPrice: 7.55, upnl: 1380, leverage: 10, walletBalance: 6200, adl30dCount: 1, adl30dAmount: 6800, updatedAt: '2025-07-15 11:42:20' },
+        { pair: 'BTC/USDT', userId: '10009', account: 'user_btc_009', marginMode: '逐仓', side: '多仓', valueU: 46000, entryPrice: 66830, markPrice: 67480, upnl: 450, leverage: 5, walletBalance: 11600, adl30dCount: 0, adl30dAmount: 0, updatedAt: '2025-07-15 15:01:14' },
+        { pair: 'ETH/USDT', userId: '20008', account: 'user_eth_008', marginMode: '全仓', side: '空仓', valueU: 26000, entryPrice: 3320, markPrice: 3288, upnl: 250, leverage: 6, walletBalance: 5800, adl30dCount: 0, adl30dAmount: 0, updatedAt: '2025-07-15 10:44:51' }
       ];
 
       function fmtNum(value) {
@@ -1585,6 +2204,30 @@
         }, 0);
       }
 
+      function parseDateTimeValue(value) {
+        if (!value) return null;
+        const normalized = value.indexOf('T') >= 0 ? value : value.replace(' ', 'T');
+        const dt = new Date(normalized);
+        return Number.isNaN(dt.getTime()) ? null : dt.getTime();
+      }
+
+      function getAdlTypeLabel(type) {
+        return type === 'manual' ? '手动ADL' : '自动ADL';
+      }
+
+      function syncAdlSnapshots() {
+        const rankingMap = buildAdlRankingMap();
+        adlUsers.forEach(function (item) {
+          if (!item.adlType) item.adlType = 'auto';
+          const detail = getRankingDetail(item, rankingMap, 'adl');
+          if (!Number.isFinite(Number(item.adlSortValue))) item.adlSortValue = Number(detail.compositeRank.toFixed(8));
+          if (!Number.isFinite(Number(item.adlBaseRank))) item.adlBaseRank = Number(detail.baseRank.toFixed(8));
+          if (!Number.isFinite(Number(item.adlFairnessFactor))) item.adlFairnessFactor = Number(detail.fairnessFactor.toFixed(8));
+          if (!Number.isFinite(Number(item.adlCountPenaltyQuantile))) item.adlCountPenaltyQuantile = Number(detail.countPenaltyQuantile.toFixed(8));
+          if (!Number.isFinite(Number(item.adlAmountPenaltyQuantile))) item.adlAmountPenaltyQuantile = Number(detail.amountPenaltyQuantile.toFixed(8));
+        });
+      }
+
       function setSpecCollapsed(collapsed) {
         specSidebar.classList.toggle('collapsed', collapsed);
         specToggle.textContent = collapsed ? '展开口径定义文档' : '收回口径';
@@ -1592,26 +2235,38 @@
 
       function activate(pageId) {
         navButtons.forEach(function (btn) { btn.classList.toggle('active', btn.dataset.page === pageId); });
+        navGroups.forEach(function (group) {
+          const groupKey = group.dataset.group;
+          const opened = groupKey === pageId || (groupKey === 'pair-config' && pageId === 'config-editor');
+          group.classList.toggle('open', opened);
+        });
         pages.forEach(function (page) { page.classList.toggle('active', page.id === pageId); });
         specPages.forEach(function (page) { page.classList.toggle('active', page.dataset.specPage === pageId); });
         if (pageId === 'pair-config') overviewTitle.textContent = 'ADL（自动减仓）币对配置';
         if (pageId === 'config-editor') overviewTitle.textContent = 'ADL减仓配置编辑';
         if (pageId === 'pair-users') overviewTitle.textContent = '币对持仓用户列表';
         if (pageId === 'adl-list') overviewTitle.textContent = 'ADL减仓列表';
-        if (pageId === 'adl-detail') overviewTitle.textContent = 'ADL减仓详情';
+        if (pageId === 'adl-current-users') overviewTitle.textContent = 'ADL当前用户列表';
+        if (pageId === 'adl-detail') overviewTitle.textContent = 'ADL用户详情';
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
 
       function getOverviewMetrics() {
         const cfgList = pairConfigs;
+        const filteredAdlUsers = getOverviewFilteredAdlUsers();
         const warnCount = cfgList.filter(function (c) { return c.status === 'warn'; }).length;
-        const todayCount = sum(cfgList, 'adlCount');
-        const pnlTotal = sum(cfgList, 'pnl');
+        const reduceCount = filteredAdlUsers.reduce(function (acc, item) {
+          return acc + (Number(item.reduceTimes) || 0);
+        }, 0);
+        const pnlTotal = filteredAdlUsers.reduce(function (acc, item) {
+          return acc + (Number(item.realizedPnl) || 0);
+        }, 0);
+        const pairHint = overviewPairFilter.value ? overviewPairFilter.value : '全部币对';
         return [
           { title: '监控币对总数', value: String(cfgList.length), hint: '按币对配置条目统计' },
           { title: '风险预警币对', value: String(warnCount), hint: '状态为风险预警的币对数' },
-          { title: '今日ADL减仓次数', value: String(todayCount), hint: '按币对汇总展示' },
-          { title: 'ADL盈利总盈亏', value: (pnlTotal >= 0 ? '+' : '') + fmtNum(pnlTotal) + ' USDT', hint: '累计已实现盈亏（演示）', className: pnlTotal >= 0 ? 'text-ok' : 'text-danger' }
+          { title: '减仓次数', value: String(reduceCount), hint: '按' + pairHint + '汇总用户减仓次数' },
+          { title: '用户ADL总盈亏', value: (pnlTotal >= 0 ? '+' : '') + fmtNum(pnlTotal) + ' USDT', hint: '按' + pairHint + '汇总用户减仓盈亏', className: pnlTotal >= 0 ? 'text-ok' : 'text-danger' }
         ];
       }
 
@@ -1657,11 +2312,16 @@
           const pnl = Number(row.pnl) || 0;
           const pnlText = (pnl >= 0 ? '+' : '') + fmtNum(pnl);
           const pnlClass = pnl >= 0 ? 'text-ok' : 'text-danger';
+          const singleReduceText = row.singleReduceMode === 'ratio'
+            ? '按比例(' + fmtNum(row.singleReduceRatio) + '%)'
+            : '全部';
           return (
             '<tr>' +
               '<td>' + row.pair + '</td>' +
-              '<td>' + fmtNum(row.maxLongLoss) + '</td>' +
-              '<td class="text-danger">' + fmtNum(row.futureLoss) + '</td>' +
+              '<td>' + fmtNum(row.maxPlatformLoss) + '</td>' +
+              '<td>' + singleReduceText + '</td>' +
+              '<td class="text-danger">' + fmtNum(row.currentLongLoss) + '</td>' +
+              '<td class="text-danger">' + fmtNum(row.currentShortLoss) + '</td>' +
               '<td>' + String(row.adlCount) + '</td>' +
               '<td class="' + pnlClass + '">' + pnlText + '</td>' +
               '<td>' + statusTag + '</td>' +
@@ -1711,6 +2371,20 @@
         }).join('');
       }
 
+      function toggleSingleReduceRatioField() {
+        const isRatio = cmSingleReduceMode.value === 'ratio';
+        cmSingleReduceRatioWrap.style.display = isRatio ? '' : 'none';
+        cmSingleReduceRatio.disabled = !isRatio;
+        if (!isRatio) cmSingleReduceRatio.value = '';
+      }
+
+      function getOverviewFilteredAdlUsers() {
+        const pair = overviewPairFilter.value;
+        return adlUsers.filter(function (item) {
+          return !pair || item.pair === pair;
+        });
+      }
+
       function getPairUsersFiltered() {
         const pair = puFilterPair.value;
         const uid = (puFilterUser.value || '').trim();
@@ -1752,6 +2426,7 @@
           return (
             '<tr>' +
               '<td>' + row.pair + '</td>' +
+              '<td>' + row.marginMode + '</td>' +
               '<td>' + row.userId + '</td>' +
               '<td>' + row.account + '</td>' +
               '<td>' + row.side + '</td>' +
@@ -1765,7 +2440,7 @@
               '<td>' +
                 '<div class="button-group">' +
                   '<button type="button" class="button pu-manual" data-key="' + key + '">手动ADL减仓</button>' +
-                  '<button type="button" class="button secondary pu-detail" data-key="' + key + '">减仓详情</button>' +
+                  '<button type="button" class="button secondary pu-detail" data-key="' + key + '">用户详情</button>' +
                 '</div>' +
               '</td>' +
             '</tr>'
@@ -1786,7 +2461,7 @@
         });
         Array.from(document.querySelectorAll('.pu-detail')).forEach(function (btn) {
           btn.addEventListener('click', function () {
-            openDetail(btn.dataset.key, 'orders');
+            openDetail(btn.dataset.key, 'orders', 'pair-users');
           });
         });
       }
@@ -1794,22 +2469,30 @@
       function getAdlListFiltered() {
         const pair = alFilterPair.value;
         const uid = (alFilterUser.value || '').trim();
-        const rankingMap = buildAdlRankingMap();
+        const type = alFilterType.value;
+        const startAt = parseDateTimeValue(alFilterStart.value);
+        const endAt = parseDateTimeValue(alFilterEnd.value);
+        syncAdlSnapshots();
         return adlUsers.filter(function (item) {
           const pairOk = !pair || item.pair === pair;
           const uidOk = !uid || item.userId.includes(uid);
-          return pairOk && uidOk;
+          const typeOk = !type || item.adlType === type;
+          const rowTime = parseDateTimeValue(item.lastAt);
+          const startOk = !startAt || (rowTime !== null && rowTime >= startAt);
+          const endOk = !endAt || (rowTime !== null && rowTime <= endAt);
+          return pairOk && uidOk && typeOk && startOk && endOk;
         }).sort(function (a, b) {
-          const rankDiff = (rankingMap[getAdlUserKey(b)].compositeRank || 0) - (rankingMap[getAdlUserKey(a)].compositeRank || 0);
-          if (rankDiff !== 0) return rankDiff;
           const t = new Date(b.lastAt.replace(' ', 'T')) - new Date(a.lastAt.replace(' ', 'T'));
           if (t !== 0) return t;
+          const rankDiff = (Number(b.adlSortValue) || 0) - (Number(a.adlSortValue) || 0);
+          if (rankDiff !== 0) return rankDiff;
           return b.userId.localeCompare(a.userId, 'zh-CN');
         });
       }
 
       function renderAdlList() {
         const list = getAdlListFiltered();
+        syncAdlSnapshots();
         const rankingMap = buildAdlRankingMap();
         const totalPages = Math.max(1, Math.ceil(list.length / pageSize));
         if (state.alPage > totalPages) state.alPage = totalPages;
@@ -1827,18 +2510,20 @@
           const pnlClass = pnl >= 0 ? 'text-ok' : 'text-danger';
           const key = row.pair + '|' + row.userId;
           const ranking = rankingMap[key] || { compositeRank: 0 };
+          const scoreValue = Number.isFinite(Number(row.adlSortValue)) ? Number(row.adlSortValue) : ranking.compositeRank;
+          const metrics = getLatestAdlOrderMetrics(row);
           return (
             '<tr>' +
               '<td>' + row.pair + '</td>' +
               '<td>' + row.userId + '</td>' +
               '<td>' + row.account + '</td>' +
-              '<td>' + String(row.profitThreshold) + '</td>' +
-              '<td>' + String(row.reduceRatio) + '</td>' +
-              '<td>' + String(row.reduceTimes) + '</td>' +
-              '<td>' + String(row.adl30dCount || 0) + '</td>' +
-              '<td>' + fmtNum(row.adl30dAmount || 0) + '</td>' +
+              '<td>' + getAdlTypeLabel(row.adlType) + '</td>' +
+              '<td class="' + (Number(metrics.beforeUnrealizedPnl) >= 0 ? 'text-ok' : 'text-danger') + '">' + fmtSigned(metrics.beforeUnrealizedPnl) + '</td>' +
+              '<td>' + fmtNum(metrics.beforeProfitRate) + '</td>' +
+              '<td>' + fmtNum(metrics.currentReduceProfitRate) + '</td>' +
               '<td class="' + pnlClass + '">' + pnlText + '</td>' +
-              '<td>' + row.lastAt + '<br /><button type="button" class="score-link al-score" data-key="' + key + '" style="margin-top:6px;">综合排序值 ' + fmtNum(ranking.compositeRank) + '</button></td>' +
+              '<td><button type="button" class="score-link al-score" data-key="' + key + '" style="margin-top:0;">ADL时排序值 ' + fmtNum(scoreValue) + '</button></td>' +
+              '<td>' + row.lastAt + '</td>' +
               '<td>' +
                 '<div class="button-group">' +
                   '<button type="button" class="button secondary al-orders" data-key="' + key + '">订单记录</button>' +
@@ -1851,19 +2536,25 @@
 
         Array.from(document.querySelectorAll('.al-orders')).forEach(function (btn) {
           btn.addEventListener('click', function () {
-            openDetail(btn.dataset.key, 'orders');
+            openDetail(btn.dataset.key, 'orders', 'adl-list');
           });
         });
         Array.from(document.querySelectorAll('.al-score')).forEach(function (btn) {
           btn.addEventListener('click', function () {
             const row = getUserRowByKey(btn.dataset.key);
             if (!row) return;
-            openScoreDetail(getRankingDetail(row, rankingMap, 'adl'));
+            const detail = getRankingDetail(row, rankingMap, 'adl');
+            if (Number.isFinite(Number(row.adlSortValue))) detail.compositeRank = Number(row.adlSortValue);
+            if (Number.isFinite(Number(row.adlBaseRank))) detail.baseRank = Number(row.adlBaseRank);
+            if (Number.isFinite(Number(row.adlFairnessFactor))) detail.fairnessFactor = Number(row.adlFairnessFactor);
+            if (Number.isFinite(Number(row.adlCountPenaltyQuantile))) detail.countPenaltyQuantile = Number(row.adlCountPenaltyQuantile);
+            if (Number.isFinite(Number(row.adlAmountPenaltyQuantile))) detail.amountPenaltyQuantile = Number(row.adlAmountPenaltyQuantile);
+            openScoreDetail(detail);
           });
         });
         Array.from(document.querySelectorAll('.al-fills')).forEach(function (btn) {
           btn.addEventListener('click', function () {
-            openDetail(btn.dataset.key, 'fills');
+            openDetail(btn.dataset.key, 'fills', 'adl-list');
           });
         });
       }
@@ -1872,23 +2563,164 @@
         return adlUsers.find(function (u) { return u.pair + '|' + u.userId === key; });
       }
 
-      function renderDetailKpis(row) {
-        if (!row) {
+      function getPositionsByUserId(userId) {
+        return pairPositions.filter(function (item) {
+          return String(item.userId) === String(userId);
+        });
+      }
+
+      function getAdlRowsByUserId(userId) {
+        return adlUsers.filter(function (item) {
+          return String(item.userId) === String(userId);
+        });
+      }
+
+      function getUserHistoryPositionCount(userId) {
+        const pairMap = {};
+        getPositionsByUserId(userId).forEach(function (item) {
+          pairMap[item.pair] = true;
+        });
+        getAdlRowsByUserId(userId).forEach(function (item) {
+          pairMap[item.pair] = true;
+        });
+        return Object.keys(pairMap).length;
+      }
+
+      function getCurrentAdlUsersFiltered() {
+        const uid = (acuFilterUser.value || '').trim();
+        const userMap = {};
+        pairPositions.forEach(function (item) {
+          const key = String(item.userId);
+          if (!userMap[key]) {
+            userMap[key] = {
+              userId: key,
+              currentPositionTotal: 0,
+              currentUnrealizedPnlTotal: 0,
+              historyPositionCount: 0,
+              realizedPnlTotal: 0,
+              lastUpdatedAt: item.updatedAt
+            };
+          }
+          userMap[key].currentPositionTotal += Number(item.valueU) || 0;
+          userMap[key].currentUnrealizedPnlTotal += Number(item.upnl) || 0;
+          if (!userMap[key].lastUpdatedAt || new Date(item.updatedAt.replace(' ', 'T')) > new Date(userMap[key].lastUpdatedAt.replace(' ', 'T'))) {
+            userMap[key].lastUpdatedAt = item.updatedAt;
+          }
+        });
+
+        Object.keys(userMap).forEach(function (key) {
+          const rows = getAdlRowsByUserId(key);
+          userMap[key].realizedPnlTotal = rows.reduce(function (acc, item) {
+            return acc + (Number(item.realizedPnl) || 0);
+          }, 0);
+          userMap[key].historyPositionCount = getUserHistoryPositionCount(key);
+        });
+
+        return Object.keys(userMap).map(function (key) {
+          return userMap[key];
+        }).filter(function (item) {
+          return !uid || item.userId.includes(uid);
+        }).sort(function (a, b) {
+          const pnlDiff = (Number(b.currentUnrealizedPnlTotal) || 0) - (Number(a.currentUnrealizedPnlTotal) || 0);
+          if (pnlDiff !== 0) return pnlDiff;
+          const t = new Date((b.lastUpdatedAt || '').replace(' ', 'T')) - new Date((a.lastUpdatedAt || '').replace(' ', 'T'));
+          if (t !== 0) return t;
+          return String(b.userId).localeCompare(String(a.userId), 'zh-CN');
+        });
+      }
+
+      function renderCurrentAdlUsers() {
+        const list = getCurrentAdlUsersFiltered();
+        const totalPages = Math.max(1, Math.ceil(list.length / pageSize));
+        if (state.acuPage > totalPages) state.acuPage = totalPages;
+        const start = (state.acuPage - 1) * pageSize;
+        const pageList = list.slice(start, start + pageSize);
+
+        acuSummary.textContent = '当前展示 ' + list.length + ' 条用户记录';
+        acuPage.textContent = '第 ' + state.acuPage + ' 页 / 共 ' + totalPages + ' 页';
+        acuPrev.disabled = state.acuPage === 1;
+        acuNext.disabled = state.acuPage === totalPages;
+
+        acuTbody.innerHTML = pageList.map(function (row) {
+          const upnlClass = Number(row.currentUnrealizedPnlTotal) >= 0 ? 'text-ok' : 'text-danger';
+          const realizedClass = Number(row.realizedPnlTotal) >= 0 ? 'text-ok' : 'text-danger';
+          return (
+            '<tr>' +
+              '<td>' + row.userId + '</td>' +
+              '<td>' + fmtNum(row.currentPositionTotal) + '</td>' +
+              '<td class="' + upnlClass + '">' + fmtSigned(row.currentUnrealizedPnlTotal) + '</td>' +
+              '<td>' + String(row.historyPositionCount) + '</td>' +
+              '<td class="' + realizedClass + '">' + fmtSigned(row.realizedPnlTotal) + '</td>' +
+              '<td><button type="button" class="button acu-detail" data-user-id="' + row.userId + '">详情</button></td>' +
+            '</tr>'
+          );
+        }).join('');
+
+        Array.from(document.querySelectorAll('.acu-detail')).forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            openUserDetailByUserId(btn.dataset.userId, 'orders');
+          });
+        });
+      }
+
+      function getLatestAdlOrderMetrics(row) {
+        const key = getAdlUserKey(row);
+        const latestOrder = (orderRecords[key] || [])[0];
+        const fallbackBeforeUnrealized = Number(row.unrealizedPnl) || 0;
+        const fallbackBeforeProfitRate = Math.max(1, Math.abs(Number(row.nominalPosition) || 0)) <= 0
+          ? 0
+          : (fallbackBeforeUnrealized / Math.max(1, Math.abs(Number(row.nominalPosition) || 0))) * 100;
+        const fallbackReduceQty = Math.max(1, Math.abs(Number(row.nominalPosition) || 0) * (Number(row.reduceRatio) || 0) / 100);
+        const fallbackCurrentReduceProfitRate = (Number(row.realizedPnl) || 0) / fallbackReduceQty * 100;
+        return {
+          beforeUnrealizedPnl: latestOrder && Number.isFinite(Number(latestOrder.beforeUnrealizedPnl))
+            ? Number(latestOrder.beforeUnrealizedPnl)
+            : fallbackBeforeUnrealized,
+          beforeProfitRate: latestOrder && Number.isFinite(Number(latestOrder.beforeProfitRate))
+            ? Number(latestOrder.beforeProfitRate)
+            : fallbackBeforeProfitRate,
+          currentReduceProfitRate: latestOrder && Number.isFinite(Number(latestOrder.currentReduceProfitRate))
+            ? Number(latestOrder.currentReduceProfitRate)
+            : fallbackCurrentReduceProfitRate
+        };
+      }
+
+      function getDetailUserSummary(userId) {
+        const adlRows = getAdlRowsByUserId(userId);
+        const positions = getPositionsByUserId(userId);
+        const firstRow = adlRows[0] || positions[0] || { account: '--' };
+        let latestAt = '';
+        adlRows.forEach(function (item) {
+          if (!latestAt || new Date(item.lastAt.replace(' ', 'T')) > new Date(latestAt.replace(' ', 'T'))) latestAt = item.lastAt;
+        });
+        positions.forEach(function (item) {
+          if (!latestAt || new Date(item.updatedAt.replace(' ', 'T')) > new Date(latestAt.replace(' ', 'T'))) latestAt = item.updatedAt;
+        });
+        return {
+          userId: userId,
+          account: firstRow.account || '--',
+          currentPositionTotal: positions.reduce(function (acc, item) { return acc + (Number(item.valueU) || 0); }, 0),
+          currentUnrealizedPnlTotal: positions.reduce(function (acc, item) { return acc + (Number(item.upnl) || 0); }, 0),
+          historyPositionCount: getUserHistoryPositionCount(userId),
+          realizedPnlTotal: adlRows.reduce(function (acc, item) { return acc + (Number(item.realizedPnl) || 0); }, 0),
+          lastAt: latestAt || '--'
+        };
+      }
+
+      function renderDetailKpis(userId) {
+        if (!userId) {
           detailKpis.innerHTML = '';
           return;
         }
-        const pnl = Number(row.realizedPnl) || 0;
-        const pnlText = (pnl >= 0 ? '+' : '') + fmtNum(pnl) + ' USDT';
-        const pnlClass = pnl >= 0 ? 'text-ok' : 'text-danger';
+        const summary = getDetailUserSummary(userId);
         const items = [
-          { k: '交易对', v: row.pair },
-          { k: '用户ID', v: row.userId },
-          { k: '用户账号', v: row.account },
-          { k: '盈利阈值(%)', v: String(row.profitThreshold) },
-          { k: '减仓比例(%)', v: String(row.reduceRatio) },
-          { k: '减仓次数', v: String(row.reduceTimes) },
-          { k: '减仓已实现盈亏(USDT)', v: pnlText, cls: pnlClass },
-          { k: '最新减仓时间', v: row.lastAt }
+          { k: '用户UID', v: summary.userId },
+          { k: '用户账号', v: summary.account },
+          { k: '当前持仓总额(USDT)', v: fmtNum(summary.currentPositionTotal) },
+          { k: '持仓未实现盈利总额(USDT)', v: fmtSigned(summary.currentUnrealizedPnlTotal), cls: Number(summary.currentUnrealizedPnlTotal) >= 0 ? 'text-ok' : 'text-danger' },
+          { k: '用户历史持仓数', v: String(summary.historyPositionCount) },
+          { k: '用户已实现盈利总额(USDT)', v: fmtSigned(summary.realizedPnlTotal), cls: Number(summary.realizedPnlTotal) >= 0 ? 'text-ok' : 'text-danger' },
+          { k: '最近更新时间', v: summary.lastAt }
         ];
         detailKpis.innerHTML = items.map(function (it) {
           return (
@@ -1898,6 +2730,42 @@
             '</div>'
           );
         }).join('');
+      }
+
+      function renderDetailPositions() {
+        const list = getPositionsByUserId(state.activeDetailUserId);
+        detailPositionSummary.textContent = '当前展示 ' + list.length + ' 条当前持仓';
+        if (!list.length) {
+          detailPositionTbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:var(--muted);">暂无当前持仓数据</td></tr>';
+          return;
+        }
+        detailPositionTbody.innerHTML = list.sort(function (a, b) {
+          const t = new Date(b.updatedAt.replace(' ', 'T')) - new Date(a.updatedAt.replace(' ', 'T'));
+          if (t !== 0) return t;
+          return b.pair.localeCompare(a.pair, 'zh-CN');
+        }).map(function (row) {
+          const upnlClass = Number(row.upnl) >= 0 ? 'text-ok' : 'text-danger';
+          return (
+            '<tr>' +
+              '<td>' + row.pair + '</td>' +
+              '<td>' + row.marginMode + '</td>' +
+              '<td>' + row.side + '</td>' +
+              '<td>' + fmtNum(row.valueU) + '</td>' +
+              '<td>' + fmtNum(row.entryPrice) + '</td>' +
+              '<td>' + fmtNum(row.markPrice) + '</td>' +
+              '<td class="' + upnlClass + '">' + fmtSigned(row.upnl) + '</td>' +
+              '<td>' + String(row.leverage) + 'x</td>' +
+              '<td>' + row.updatedAt + '</td>' +
+              '<td><button type="button" class="button detail-manual" data-key="' + row.pair + '|' + row.userId + '">手动ADL减仓</button></td>' +
+            '</tr>'
+          );
+        }).join('');
+
+        Array.from(document.querySelectorAll('.detail-manual')).forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            openManualAdlModal(btn.dataset.key);
+          });
+        });
       }
 
       function setActiveTab(tabKey) {
@@ -1916,15 +2784,25 @@
       }
 
       function getDetailList() {
-        const key = state.activeUserKey;
+        const userId = state.activeDetailUserId;
         const tab = state.adTab;
-        const raw = tab === 'orders' ? (orderRecords[key] || []) : (fillRecords[key] || []);
+        const keys = Object.keys(tab === 'orders' ? orderRecords : fillRecords).filter(function (key) {
+          return key.split('|')[1] === String(userId);
+        });
+        const raw = [];
+        keys.forEach(function (key) {
+          const pair = key.split('|')[0];
+          (tab === 'orders' ? orderRecords[key] : fillRecords[key]).forEach(function (row) {
+            const cloned = Object.assign({}, row);
+            if (!cloned.pair) cloned.pair = pair;
+            raw.push(cloned);
+          });
+        });
         return raw.filter(function (row) {
-          const atText = tab === 'orders' ? row.at : row.at;
-          return getDateFilterOk(atText);
+          return getDateFilterOk(row.at);
         }).sort(function (a, b) {
-          const ta = new Date((tab === 'orders' ? a.at : a.at).replace(' ', 'T'));
-          const tb = new Date((tab === 'orders' ? b.at : b.at).replace(' ', 'T'));
+          const ta = new Date(a.at.replace(' ', 'T'));
+          const tb = new Date(b.at.replace(' ', 'T'));
           return tb - ta;
         });
       }
@@ -1933,13 +2811,16 @@
         if (state.adTab === 'orders') {
           adThead.innerHTML =
             '<tr>' +
+              '<th>交易对</th>' +
               '<th>减仓时间</th>' +
               '<th>开仓方向</th>' +
               '<th>减仓数量(USDT)</th>' +
               '<th>减仓时实时价格</th>' +
               '<th>订单成交均价</th>' +
+              '<th>减仓前用户未实现盈亏(USDT)</th>' +
+              '<th>减仓前盈利率(%)</th>' +
+              '<th>此次减仓盈利率(%)</th>' +
               '<th>减仓盈亏(USDT)</th>' +
-              '<th>减仓后盈利率(%)</th>' +
               '<th>订单状态</th>' +
             '</tr>';
           return;
@@ -1973,16 +2854,21 @@
 
         if (state.adTab === 'orders') {
           adTbody.innerHTML = pageList.map(function (row) {
-            const pnlText = (Number(row.pnl) >= 0 ? '+' : '') + fmtNum(row.pnl);
+            const pnlNum = Number(row.pnl) || 0;
+            const pnlText = (pnlNum >= 0 ? '+' : '') + fmtNum(pnlNum);
+            const beforeText = fmtSigned(row.beforeUnrealizedPnl || 0);
             return (
               '<tr>' +
+                '<td>' + row.pair + '</td>' +
                 '<td>' + row.at + '</td>' +
                 '<td>' + row.side + '</td>' +
                 '<td>' + fmtNum(row.qty) + '</td>' +
                 '<td>' + fmtNum(row.markPrice) + '</td>' +
                 '<td>' + fmtNum(row.avgPrice) + '</td>' +
+                '<td class="' + ((Number(row.beforeUnrealizedPnl) || 0) >= 0 ? 'text-ok' : 'text-danger') + '">' + beforeText + '</td>' +
+                '<td>' + fmtNum(row.beforeProfitRate || 0) + '</td>' +
+                '<td>' + fmtNum(row.currentReduceProfitRate || 0) + '</td>' +
                 '<td class="text-ok">' + pnlText + '</td>' +
-                '<td>' + String(row.afterProfitRate) + '</td>' +
                 '<td><span class="tag ok">' + row.status + '</span></td>' +
               '</tr>'
             );
@@ -2009,19 +2895,43 @@
         }).join('');
       }
 
-      function openDetail(key, tab) {
-        state.activeUserKey = key;
-        const row = getUserRowByKey(key);
-        renderDetailKpis(row);
+      function openUserDetailByUserId(userId, tab, sourcePage) {
+        state.activeDetailUserId = String(userId || '');
+        state.activeUserKey = '';
+        if (sourcePage) state.activeDetailSource = sourcePage;
+        renderDetailKpis(state.activeDetailUserId);
+        renderDetailPositions();
         setActiveTab(tab);
         activate('adl-detail');
       }
 
-      function calcRiskRate(maxLoss, futureLoss) {
+      function openDetail(key, tab, sourcePage) {
+        const userId = String(key).split('|')[1] || '';
+        state.activeUserKey = key;
+        openUserDetailByUserId(userId, tab, sourcePage);
+      }
+
+      function getDirectionalLossAbs(value) {
+        return Math.abs(Math.min(0, Number(value) || 0));
+      }
+
+      function calcTotalRiskLoss(longLoss, shortLoss) {
+        return getDirectionalLossAbs(longLoss) + getDirectionalLossAbs(shortLoss);
+      }
+
+      function getPriorityAdlDirection(config) {
+        const longLossAbs = getDirectionalLossAbs(config.currentLongLoss);
+        const shortLossAbs = getDirectionalLossAbs(config.currentShortLoss);
+        if (longLossAbs > shortLossAbs) return '优先ADL多仓方向';
+        if (shortLossAbs > longLossAbs) return '优先ADL空仓方向';
+        return '多空方向风险相同，按最新风险度重新判断';
+      }
+
+      function calcRiskRate(maxLoss, longLoss, shortLoss) {
         const ml = Number(maxLoss);
-        const fl = Math.abs(Number(futureLoss));
-        if (!Number.isFinite(ml) || ml <= 0 || !Number.isFinite(fl)) return '--';
-        const rate = Math.min(99.99, Math.max(0, (fl / ml) * 100));
+        const totalLoss = calcTotalRiskLoss(longLoss, shortLoss);
+        if (!Number.isFinite(ml) || ml <= 0 || !Number.isFinite(totalLoss)) return '--';
+        const rate = Math.min(99.99, Math.max(0, (totalLoss / ml) * 100));
         return fmtNum(rate) + '%';
       }
 
@@ -2035,25 +2945,31 @@
       function openStatusResult(pair) {
         const current = pairConfigs.find(function (c) { return c.pair === pair; });
         if (!current) return;
-        const risk = calcRiskRate(current.maxLongLoss, current.futureLoss);
-        const futureLossAbs = Math.abs(Number(current.futureLoss) || 0);
-        const threshold = Math.max(1, Number(current.maxLongLoss) || 1);
-        const ratio = futureLossAbs / threshold;
+        const risk = calcRiskRate(current.maxPlatformLoss, current.currentLongLoss, current.currentShortLoss);
+        const totalLoss = calcTotalRiskLoss(current.currentLongLoss, current.currentShortLoss);
+        const threshold = Math.max(1, Number(current.maxPlatformLoss) || 1);
+        const ratio = totalLoss / threshold;
         const resultText = ratio >= 0.75 ? '风险预警' : '正常';
+        const priorityDirection = getPriorityAdlDirection(current);
         srmTitle.textContent = '风险预警结果 - ' + current.pair;
         srmGrid.innerHTML = [
           { k: '币对', v: current.pair },
-          { k: '最多多方向可亏损额', v: fmtNum(current.maxLongLoss) + ' USDT' },
-          { k: '用户未来累计亏损额', v: fmtNum(current.futureLoss) + ' USDT' },
+          { k: '平台最大可亏损额', v: fmtNum(current.maxPlatformLoss) + ' USDT' },
+          { k: '当前多仓亏损', v: fmtNum(current.currentLongLoss) + ' USDT' },
+          { k: '当前空仓亏损', v: fmtNum(current.currentShortLoss) + ' USDT' },
           { k: '风险比率', v: risk },
+          { k: '当前优先ADL方向', v: priorityDirection },
           { k: '当前状态', v: resultText },
           { k: '30天已ADL次数', v: String(current.adlCount) }
         ].map(function (item) {
           return '<div class="kpi"><small>' + item.k + '</small><strong>' + item.v + '</strong></div>';
         }).join('');
         srmFormula.textContent =
-          '风险比率 = 绝对值(用户未来累计亏损额) ÷ 最多多方向可亏损额\n' +
-          '风险比率 = ' + fmtNum(futureLossAbs) + ' ÷ ' + fmtNum(threshold) + ' = ' + risk + '\n' +
+          '总亏损 = 绝对值(当前多仓亏损) + 绝对值(当前空仓亏损)\n' +
+          '总亏损 = ' + fmtNum(getDirectionalLossAbs(current.currentLongLoss)) + ' + ' + fmtNum(getDirectionalLossAbs(current.currentShortLoss)) + ' = ' + fmtNum(totalLoss) + '\n' +
+          '风险比率 = 总亏损 ÷ 平台最大可亏损额\n' +
+          '风险比率 = ' + fmtNum(totalLoss) + ' ÷ ' + fmtNum(threshold) + ' = ' + risk + '\n' +
+          'ADL方向规则：优先比较多仓与空仓当前亏损绝对值，亏损更高的方向优先执行自动ADL；每完成一个用户在该方向、该币对下的全部持仓ADL后，系统重新按最新亏损数据判断下一次ADL方向。\n' +
           '状态判定规则：当风险比率 ≥ 75% 时，状态为风险预警；当风险比率 < 75% 时，状态为正常。\n' +
           '当前结果：' + resultText;
         statusResultModal.classList.add('active');
@@ -2082,10 +2998,10 @@
         const entryPrice = Number(position.entryPrice) || 0;
         const qty = Math.max(0, Number(closeQty) || 0);
         const bankruptcy = Math.max(0, Number(bankruptcyPrice) || 0);
-        if (entryPrice <= 0 || qty <= 0 || bankruptcy <= 0) return 0;
+        if (qty <= 0 || bankruptcy <= 0) return 0;
         const delta = position.side === '空仓'
-          ? (entryPrice - bankruptcy) / entryPrice
-          : (bankruptcy - entryPrice) / entryPrice;
+          ? (entryPrice - bankruptcy)
+          : (bankruptcy - entryPrice);
         return qty * delta;
       }
 
@@ -2148,6 +3064,11 @@
         const riskRate = totalQty <= 0 ? 0 : Math.round((Math.abs(realized) / totalQty) * 100);
         const doneAt = nowStr();
         const key = position.pair + '|' + position.userId;
+        const positionRankingMap = buildPairPositionRankingMap();
+        const rankingSnapshot = getRankingDetail(position, positionRankingMap, 'position');
+        const beforeUnrealizedPnl = beforePnl;
+        const beforeProfitRate = totalQty <= 0 ? 0 : (beforeUnrealizedPnl / totalQty) * 100;
+        const currentReduceProfitRate = closeQty <= 0 ? 0 : (realized / closeQty) * 100;
 
         position.valueU = Math.max(0, totalQty - closeQty);
         position.upnl = Number(remainPnl.toFixed(2));
@@ -2156,6 +3077,7 @@
         const userRow = adlUsers.find(function (item) { return item.pair === position.pair && item.userId === position.userId; });
         if (userRow) {
           userRow.reduceTimes += 1;
+          userRow.adlType = 'manual';
           userRow.reduceRatio = reduceRatio;
           userRow.realizedPnl = Number((Number(userRow.realizedPnl || 0) + realized).toFixed(2));
           userRow.nominalPosition = Number(position.valueU.toFixed(2));
@@ -2165,11 +3087,17 @@
           userRow.adl30dAmount = Number(((Number(userRow.adl30dAmount) || 0) + Math.abs(realized)).toFixed(2));
           userRow.lastAt = doneAt;
           userRow.profitThreshold = Math.max(userRow.profitThreshold, riskRate);
+          userRow.adlSortValue = Number(rankingSnapshot.compositeRank.toFixed(8));
+          userRow.adlBaseRank = Number(rankingSnapshot.baseRank.toFixed(8));
+          userRow.adlFairnessFactor = Number(rankingSnapshot.fairnessFactor.toFixed(8));
+          userRow.adlCountPenaltyQuantile = Number(rankingSnapshot.countPenaltyQuantile.toFixed(8));
+          userRow.adlAmountPenaltyQuantile = Number(rankingSnapshot.amountPenaltyQuantile.toFixed(8));
         } else {
           adlUsers.unshift({
             pair: position.pair,
             userId: position.userId,
             account: position.account,
+            adlType: 'manual',
             profitThreshold: riskRate,
             reduceRatio: reduceRatio,
             reduceTimes: 1,
@@ -2179,7 +3107,12 @@
             nominalPosition: Number(position.valueU.toFixed(2)),
             unrealizedPnl: Number(position.upnl.toFixed(2)),
             adl30dCount: 1,
-            adl30dAmount: Number(Math.abs(realized).toFixed(2))
+            adl30dAmount: Number(Math.abs(realized).toFixed(2)),
+            adlSortValue: Number(rankingSnapshot.compositeRank.toFixed(8)),
+            adlBaseRank: Number(rankingSnapshot.baseRank.toFixed(8)),
+            adlFairnessFactor: Number(rankingSnapshot.fairnessFactor.toFixed(8)),
+            adlCountPenaltyQuantile: Number(rankingSnapshot.countPenaltyQuantile.toFixed(8)),
+            adlAmountPenaltyQuantile: Number(rankingSnapshot.amountPenaltyQuantile.toFixed(8))
           });
         }
 
@@ -2190,8 +3123,10 @@
           qty: Number(closeQty.toFixed(2)),
           markPrice: Number(bankruptcyPrice.toFixed(2)),
           avgPrice: Number(position.entryPrice),
+          beforeUnrealizedPnl: Number(beforeUnrealizedPnl.toFixed(8)),
+          beforeProfitRate: Number(beforeProfitRate.toFixed(8)),
+          currentReduceProfitRate: Number(currentReduceProfitRate.toFixed(8)),
           pnl: Number(realized.toFixed(2)),
-          afterProfitRate: Math.max(0, Math.round((Math.max(0, position.upnl) / Math.max(1, position.valueU || 1)) * 100)),
           status: '已完成'
         });
 
@@ -2223,6 +3158,7 @@
         renderPairConfig();
         renderPairUsers();
         renderAdlList();
+        renderCurrentAdlUsers();
         openDetail(key, 'orders');
         closeManualAdlModal();
       }
@@ -2232,20 +3168,25 @@
         cmTitle.textContent = activeEditPair ? 'ADL减仓配置' : '新增ADL减仓配置';
         const current = pairConfigs.find(function (c) { return c.pair === pair; });
         const initPair = current ? current.pair : (pairUniverse[0] || 'BTC/USDT');
-        const initMaxLoss = current ? current.maxLongLoss : 300000;
-        const initFutureLoss = current ? current.futureLoss : -100000;
+        const initMaxLoss = current ? current.maxPlatformLoss : 300000;
+        const initLongLoss = current ? current.currentLongLoss : -60000;
+        const initShortLoss = current ? current.currentShortLoss : -40000;
         const initLongBankruptcyOffset = current ? current.longBankruptcyOffset : 5;
         const initShortBankruptcyOffset = current ? current.shortBankruptcyOffset : 5;
+        const initSingleReduceMode = current && current.singleReduceMode ? current.singleReduceMode : 'all';
+        const initSingleReduceRatio = current && Number.isFinite(Number(current.singleReduceRatio)) ? Number(current.singleReduceRatio) : '';
         const initCycle = current ? current.cycle : 'day';
         cmPair.value = initPair;
         cmMaxLoss.value = String(initMaxLoss);
-        cmFutureLoss.value = String(initFutureLoss);
         cmLongBankruptcyOffset.value = String(initLongBankruptcyOffset);
         cmShortBankruptcyOffset.value = String(initShortBankruptcyOffset);
+        cmSingleReduceMode.value = initSingleReduceMode;
+        cmSingleReduceRatio.value = initSingleReduceRatio === '' ? '' : String(initSingleReduceRatio);
+        toggleSingleReduceRatioField();
         Array.from(cmCycleGroup.querySelectorAll('input[name="cm-cycle"]')).forEach(function (r) {
           r.checked = r.value === initCycle;
         });
-        const risk = calcRiskRate(initMaxLoss, initFutureLoss);
+        const risk = calcRiskRate(initMaxLoss, initLongLoss, initShortLoss);
         cmRiskRate.textContent = risk;
         const rnum = Number(String(risk).replace('%', ''));
         cmRiskRate.className = rnum >= 85 ? 'text-danger' : (rnum >= 65 ? 'text-warn' : 'text-ok');
@@ -2266,34 +3207,42 @@
       function saveConfig() {
         const pair = cmPair.value;
         const maxLoss = Number(cmMaxLoss.value || 0);
-        const futureLoss = Number(cmFutureLoss.value || 0);
         const longBankruptcyOffset = Number(cmLongBankruptcyOffset.value || 0);
         const shortBankruptcyOffset = Number(cmShortBankruptcyOffset.value || 0);
+        const singleReduceMode = cmSingleReduceMode.value === 'ratio' ? 'ratio' : 'all';
+        const singleReduceRatio = singleReduceMode === 'ratio' ? Number(cmSingleReduceRatio.value || 0) : null;
         if (!pair) return;
         if (!Number.isFinite(maxLoss) || maxLoss <= 0) return;
-        if (!Number.isFinite(futureLoss)) return;
         if (!Number.isFinite(longBankruptcyOffset) || longBankruptcyOffset < 0) return;
         if (!Number.isFinite(shortBankruptcyOffset) || shortBankruptcyOffset < 0) return;
+        if (singleReduceMode === 'ratio' && (!Number.isFinite(singleReduceRatio) || singleReduceRatio <= 0 || singleReduceRatio > 100)) return;
         const cycle = getSelectedCycle();
         const existing = pairConfigs.find(function (c) { return c.pair === pair; });
+        const currentLongLoss = existing ? Number(existing.currentLongLoss || 0) : 0;
+        const currentShortLoss = existing ? Number(existing.currentShortLoss || 0) : 0;
+        const nextStatus = calcTotalRiskLoss(currentLongLoss, currentShortLoss) / Math.max(1, maxLoss) >= 0.75 ? 'warn' : 'ok';
         if (existing) {
-          existing.maxLongLoss = Math.round(maxLoss);
-          existing.futureLoss = Math.round(futureLoss);
+          existing.maxPlatformLoss = Math.round(maxLoss);
           existing.longBankruptcyOffset = Number(longBankruptcyOffset.toFixed(2));
           existing.shortBankruptcyOffset = Number(shortBankruptcyOffset.toFixed(2));
+          existing.singleReduceMode = singleReduceMode;
+          existing.singleReduceRatio = singleReduceMode === 'ratio' ? Number(singleReduceRatio.toFixed(2)) : null;
           existing.cycle = cycle;
-          existing.status = Math.abs(existing.futureLoss) / Math.max(1, existing.maxLongLoss) >= 0.75 ? 'warn' : 'ok';
+          existing.status = nextStatus;
         } else {
           pairConfigs.unshift({
             pair: pair,
-            maxLongLoss: Math.round(maxLoss),
-            futureLoss: Math.round(futureLoss),
+            maxPlatformLoss: Math.round(maxLoss),
+            currentLongLoss: 0,
+            currentShortLoss: 0,
             adlCount: 0,
             pnl: 0,
-            status: Math.abs(futureLoss) / Math.max(1, maxLoss) >= 0.75 ? 'warn' : 'ok',
+            status: nextStatus,
             cycle: cycle,
             longBankruptcyOffset: Number(longBankruptcyOffset.toFixed(2)),
-            shortBankruptcyOffset: Number(shortBankruptcyOffset.toFixed(2))
+            shortBankruptcyOffset: Number(shortBankruptcyOffset.toFixed(2)),
+            singleReduceMode: singleReduceMode,
+            singleReduceRatio: singleReduceMode === 'ratio' ? Number(singleReduceRatio.toFixed(2)) : null
           });
         }
         state.pcPage = 1;
@@ -2349,6 +3298,9 @@
       alReset.addEventListener('click', function () {
         alFilterPair.value = '';
         alFilterUser.value = '';
+        alFilterType.value = '';
+        alFilterStart.value = '';
+        alFilterEnd.value = '';
         state.alPage = 1;
         renderAdlList();
       });
@@ -2358,7 +3310,19 @@
         if (state.alPage < total) { state.alPage += 1; renderAdlList(); }
       });
 
-      backToList.addEventListener('click', function () { activate('adl-list'); });
+      acuApply.addEventListener('click', function () { state.acuPage = 1; renderCurrentAdlUsers(); });
+      acuReset.addEventListener('click', function () {
+        acuFilterUser.value = '';
+        state.acuPage = 1;
+        renderCurrentAdlUsers();
+      });
+      acuPrev.addEventListener('click', function () { if (state.acuPage > 1) { state.acuPage -= 1; renderCurrentAdlUsers(); } });
+      acuNext.addEventListener('click', function () {
+        const total = Math.max(1, Math.ceil(getCurrentAdlUsersFiltered().length / pageSize));
+        if (state.acuPage < total) { state.acuPage += 1; renderCurrentAdlUsers(); }
+      });
+
+      backToList.addEventListener('click', function () { activate(state.activeDetailSource || 'adl-list'); });
       tabs.forEach(function (t) {
         t.addEventListener('click', function () { setActiveTab(t.dataset.tab); });
       });
@@ -2376,13 +3340,27 @@
       cmPair.addEventListener('change', function () {
         const pair = cmPair.value;
         const current = pairConfigs.find(function (c) { return c.pair === pair; });
-        const maxLoss = current ? current.maxLongLoss : Number(cmMaxLoss.value || 300000);
-        const futureLoss = current ? current.futureLoss : Number(cmFutureLoss.value || -100000);
-        const risk = calcRiskRate(maxLoss, futureLoss);
+        const maxLoss = current ? current.maxPlatformLoss : Number(cmMaxLoss.value || 300000);
+        const currentLongLoss = current ? current.currentLongLoss : 0;
+        const currentShortLoss = current ? current.currentShortLoss : 0;
+        cmLongBankruptcyOffset.value = current ? String(current.longBankruptcyOffset) : cmLongBankruptcyOffset.value;
+        cmShortBankruptcyOffset.value = current ? String(current.shortBankruptcyOffset) : cmShortBankruptcyOffset.value;
+        cmSingleReduceMode.value = current && current.singleReduceMode ? current.singleReduceMode : 'all';
+        cmSingleReduceRatio.value = current && Number.isFinite(Number(current.singleReduceRatio)) ? String(current.singleReduceRatio) : '';
+        toggleSingleReduceRatioField();
+        const risk = calcRiskRate(maxLoss, currentLongLoss, currentShortLoss);
         cmRiskRate.textContent = risk;
       });
-      cmMaxLoss.addEventListener('input', function () { cmRiskRate.textContent = calcRiskRate(cmMaxLoss.value, cmFutureLoss.value); });
-      cmFutureLoss.addEventListener('input', function () { cmRiskRate.textContent = calcRiskRate(cmMaxLoss.value, cmFutureLoss.value); });
+      function refreshConfigRiskRate() {
+        const current = pairConfigs.find(function (c) { return c.pair === cmPair.value; });
+        const risk = calcRiskRate(cmMaxLoss.value, current ? current.currentLongLoss : 0, current ? current.currentShortLoss : 0);
+        cmRiskRate.textContent = risk;
+        const rnum = Number(String(risk).replace('%', ''));
+        cmRiskRate.className = rnum >= 85 ? 'text-danger' : (rnum >= 65 ? 'text-warn' : 'text-ok');
+      }
+      cmMaxLoss.addEventListener('input', refreshConfigRiskRate);
+      cmSingleReduceMode.addEventListener('change', toggleSingleReduceRatioField);
+      overviewPairFilter.addEventListener('change', function () { renderOverview(); });
 
       mamClose.addEventListener('click', closeManualAdlModal);
       mamCancel.addEventListener('click', closeManualAdlModal);
@@ -2401,11 +3379,13 @@
       renderPairSelect(alFilterPair, true);
       renderPairSelect(puFilterPair, true);
       renderPairSelect(cmPair, false);
+      renderPairSelect(overviewPairFilter, true);
       renderOverview();
       renderPairConfig();
       renderPairUsers();
       renderAdlList();
-      openDetail('BTC/USDT|10001', 'orders');
+      renderCurrentAdlUsers();
+      openDetail('BTC/USDT|10001', 'orders', 'adl-list');
       setSpecCollapsed(true);
       activate('pair-config');
     })();
