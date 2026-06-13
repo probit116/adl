@@ -1,0 +1,2414 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ADL 盈利减仓原型</title>
+  <style>
+    :root{
+      --bg:#0b1220;
+      --panel:#101a28;
+      --panel-soft:#142238;
+      --line:rgba(148,163,184,.14);
+      --text:#eef5ff;
+      --muted:#8ea4c1;
+      --primary:#56a7ff;
+      --danger:#ff5d6c;
+      --warn:#ff914d;
+      --ok:#2ed3a1;
+      --radius-xl:24px;
+      --radius-lg:18px;
+      --radius-md:14px;
+      --shadow:0 24px 60px rgba(0,0,0,.28);
+      --font-display:"STZhongsong","Microsoft YaHei",sans-serif;
+      --font-body:"PingFang SC","Microsoft YaHei",sans-serif;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      color:var(--text);
+      font-family:var(--font-body);
+      background:
+        radial-gradient(circle at top left, rgba(86,167,255,.16), transparent 26%),
+        radial-gradient(circle at 86% 8%, rgba(255,145,77,.14), transparent 24%),
+        linear-gradient(180deg, #07101a 0%, #0b1220 45%, #07101a 100%);
+    }
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      background-image:
+        linear-gradient(rgba(255,255,255,.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px);
+      background-size:38px 38px;
+      mask-image:linear-gradient(180deg, rgba(255,255,255,.7), transparent 90%);
+    }
+
+    .app-shell{
+      width:min(1500px, calc(100vw - 40px));
+      margin:20px auto;
+      display:grid;
+      grid-template-columns:290px minmax(0,1fr);
+      gap:20px;
+    }
+
+    .sidebar{
+      position:sticky;
+      top:20px;
+      height:calc(100vh - 40px);
+      padding:22px;
+      border-radius:var(--radius-xl);
+      border:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(16,26,40,.96), rgba(9,17,28,.96));
+      box-shadow:var(--shadow);
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+    .eyebrow{
+      display:inline-flex;
+      padding:7px 12px;
+      border-radius:999px;
+      background:rgba(86,167,255,.12);
+      color:#a6cdff;
+      font-size:12px;
+      letter-spacing:.08em;
+      width:max-content;
+    }
+    .sidebar h1{
+      margin:0;
+      font-family:var(--font-display);
+      font-size:26px;
+      line-height:1.35;
+    }
+    .sidebar p{
+      margin:0;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.85;
+    }
+    .nav-list{
+      display:grid;
+      gap:12px;
+      margin-top:10px;
+    }
+    .nav-btn{
+      width:100%;
+      padding:18px;
+      border:1px solid rgba(148,163,184,.12);
+      border-radius:var(--radius-lg);
+      background:rgba(255,255,255,.03);
+      color:var(--text);
+      text-align:left;
+      cursor:pointer;
+      transition:all .18s ease;
+    }
+    .nav-btn:hover,
+    .nav-btn.active{
+      border-color:rgba(86,167,255,.52);
+      background:linear-gradient(135deg, rgba(86,167,255,.2), rgba(19,29,42,.92));
+      transform:translateY(-1px);
+    }
+    .nav-btn strong, .nav-btn span{display:block}
+    .nav-btn strong{font-size:16px; margin-bottom:8px}
+    .nav-btn span{font-size:12px; color:var(--muted); line-height:1.7}
+    .nav-btn.active span{color:#dceaff}
+
+    .content{display:grid; gap:20px; align-content:start}
+    .overview-bar, .section-card{
+      border-radius:var(--radius-xl);
+      border:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(16,26,40,.96), rgba(10,18,30,.96));
+      box-shadow:var(--shadow);
+    }
+
+    .overview-bar{
+      position:sticky;
+      top:20px;
+      z-index:8;
+      padding:18px 20px;
+    }
+    .overview-bar__head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-bottom:14px;
+    }
+    .overview-bar__head h3{
+      margin:0;
+      font-size:20px;
+    }
+    .pill-group{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .pill{
+      border:1px solid rgba(148,163,184,.16);
+      background:rgba(255,255,255,.04);
+      color:var(--text);
+      padding:8px 12px;
+      border-radius:999px;
+      font-size:12px;
+      cursor:pointer;
+      transition:all .15s ease;
+    }
+    .pill.active{
+      border-color:rgba(86,167,255,.6);
+      background:rgba(86,167,255,.14);
+      color:#dceaff;
+    }
+    .overview-grid{
+      display:grid;
+      grid-template-columns:repeat(4, minmax(0,1fr));
+      gap:12px;
+    }
+    .overview-card{
+      padding:16px;
+      border-radius:var(--radius-md);
+      border:1px solid rgba(255,255,255,.06);
+      background:rgba(255,255,255,.03);
+      min-height:86px;
+    }
+    .overview-card small{
+      display:block;
+      color:var(--muted);
+      margin-bottom:8px;
+      font-size:12px;
+    }
+    .overview-card strong{
+      display:block;
+      font-size:18px;
+      letter-spacing:.02em;
+      word-break:break-all;
+    }
+    .overview-card span{
+      display:block;
+      margin-top:6px;
+      color:#dbe7f3;
+      font-size:12px;
+    }
+    .text-ok{color:var(--ok)}
+    .text-danger{color:var(--danger)}
+    .text-warn{color:var(--warn)}
+
+    .page{display:none}
+    .page.active{display:block}
+
+    .section-card{padding:18px 20px}
+    .section-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:14px;
+      margin-bottom:12px;
+    }
+    .section-head h4, .section-head h3{margin:0}
+    .section-head h3{font-size:20px}
+    .breadcrumb{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      color:var(--muted);
+      font-size:12px;
+    }
+    .breadcrumb b{color:#dceaff; font-weight:600}
+
+    .field-grid{
+      display:grid;
+      grid-template-columns:repeat(4, minmax(0,1fr));
+      gap:12px;
+      padding:14px;
+      border-radius:var(--radius-lg);
+      border:1px solid rgba(148,163,184,.12);
+      background:rgba(255,255,255,.03);
+    }
+    .field label{
+      display:block;
+      font-size:12px;
+      color:var(--muted);
+      margin-bottom:8px;
+    }
+    .field input, .field select{
+      width:100%;
+      height:42px;
+      border-radius:12px;
+      border:1px solid rgba(148,163,184,.18);
+      background:rgba(11,18,32,.72);
+      color:var(--text);
+      padding:0 12px;
+      outline:none;
+    }
+    .field input::placeholder{color:rgba(142,164,193,.75)}
+    .button-group{display:flex; gap:10px; flex-wrap:wrap}
+    .button{
+      height:42px;
+      padding:0 14px;
+      border-radius:12px;
+      border:1px solid rgba(86,167,255,.55);
+      background:rgba(86,167,255,.18);
+      color:var(--text);
+      cursor:pointer;
+      transition:all .15s ease;
+      font-size:12px;
+      white-space:nowrap;
+    }
+    .button:hover{transform:translateY(-1px); background:rgba(86,167,255,.24)}
+    .button.secondary{
+      border-color:rgba(148,163,184,.22);
+      background:rgba(255,255,255,.04);
+    }
+    .button.secondary:hover{background:rgba(255,255,255,.07)}
+    .button.danger{
+      border-color:rgba(255,93,108,.6);
+      background:rgba(255,93,108,.16);
+    }
+    .button.success{
+      border-color:rgba(46,211,161,.55);
+      background:rgba(46,211,161,.14);
+    }
+
+    table{width:100%; border-collapse:collapse}
+    thead th{
+      text-align:left;
+      font-size:12px;
+      color:var(--muted);
+      font-weight:600;
+      padding:12px 10px;
+      border-bottom:1px solid rgba(148,163,184,.14);
+    }
+    tbody td{
+      padding:12px 10px;
+      border-bottom:1px solid rgba(148,163,184,.10);
+      font-size:13px;
+      vertical-align:top;
+      word-break:break-word;
+    }
+    tbody tr:hover{background:rgba(255,255,255,.02)}
+    .tag{
+      display:inline-flex;
+      align-items:center;
+      height:22px;
+      padding:0 10px;
+      border-radius:999px;
+      font-size:12px;
+      border:1px solid rgba(148,163,184,.18);
+      background:rgba(255,255,255,.04);
+    }
+    .tag.ok{border-color:rgba(46,211,161,.45); background:rgba(46,211,161,.12); color:#a7ffe6}
+    .tag.warn{border-color:rgba(255,145,77,.55); background:rgba(255,145,77,.14); color:#ffe2cf}
+    .tag.danger{border-color:rgba(255,93,108,.55); background:rgba(255,93,108,.14); color:#ffd1d6}
+
+    .table-wrap{
+      margin-top:12px;
+      border-radius:var(--radius-lg);
+      border:1px solid rgba(148,163,184,.12);
+      background:rgba(255,255,255,.02);
+      overflow:hidden;
+    }
+    .footer-row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-top:12px;
+      flex-wrap:wrap;
+      color:var(--muted);
+      font-size:12px;
+    }
+    .pagination{display:flex; gap:8px; align-items:center}
+    .page-chip{
+      height:34px;
+      padding:0 12px;
+      border-radius:10px;
+      border:1px solid rgba(148,163,184,.18);
+      background:rgba(255,255,255,.04);
+      color:var(--text);
+      cursor:pointer;
+      font-size:12px;
+    }
+    .page-chip:disabled{opacity:.45; cursor:not-allowed}
+
+    .tabs{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+    .tab{
+      height:38px;
+      padding:0 14px;
+      border-radius:12px;
+      border:1px solid rgba(148,163,184,.18);
+      background:rgba(255,255,255,.04);
+      color:var(--text);
+      cursor:pointer;
+      font-size:12px;
+    }
+    .tab.active{
+      border-color:rgba(86,167,255,.6);
+      background:rgba(86,167,255,.16);
+    }
+
+    .detail-grid{
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0,1fr));
+      gap:10px;
+      margin-top:12px;
+      padding:14px;
+      border-radius:var(--radius-lg);
+      border:1px solid rgba(148,163,184,.12);
+      background:rgba(255,255,255,.03);
+    }
+    .detail-item{
+      padding:12px;
+      border-radius:var(--radius-md);
+      border:1px solid rgba(255,255,255,.06);
+      background:rgba(255,255,255,.03);
+      min-height:72px;
+    }
+    .detail-item small{display:block; color:var(--muted); font-size:12px; margin-bottom:8px}
+    .detail-item strong{display:block; font-size:14px; word-break:break-word}
+
+    .spec-toggle{
+      position:fixed;
+      right:22px;
+      bottom:22px;
+      z-index:50;
+    }
+    .spec-sidebar{
+      position:fixed;
+      top:0;
+      right:0;
+      width:min(420px, calc(100vw - 40px));
+      height:100vh;
+      padding:20px 18px 22px;
+      border-left:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(9,17,28,.98), rgba(12,18,30,.96));
+      box-shadow:-24px 0 60px rgba(0,0,0,.35);
+      transform:translateX(0);
+      transition:transform .22s ease;
+      z-index:40;
+      overflow:auto;
+    }
+    .spec-sidebar.collapsed{transform:translateX(calc(100% - 44px))}
+    .spec-sidebar h3{margin:0 0 12px; font-size:16px}
+    .spec-card{
+      padding:14px 14px;
+      border-radius:var(--radius-lg);
+      border:1px solid rgba(148,163,184,.14);
+      background:rgba(255,255,255,.03);
+      margin-bottom:10px;
+    }
+    .spec-card strong{display:block; font-size:13px; margin-bottom:8px}
+    .spec-card span{display:block; font-size:12px; color:#d0dceb; line-height:1.85}
+    .spec-page{display:none}
+    .spec-page.active{display:block}
+
+    .modal{
+      position:fixed;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:22px;
+      background:rgba(6,10,16,.65);
+      z-index:60;
+    }
+    .modal.active{display:flex}
+    .modal-panel{
+      width:min(560px, 100%);
+      border-radius:var(--radius-xl);
+      border:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(16,26,40,.98), rgba(9,17,28,.98));
+      box-shadow:var(--shadow);
+      padding:18px 18px 16px;
+    }
+    .modal-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      margin-bottom:14px;
+    }
+    .modal-head h4{margin:0; font-size:18px}
+    .modal-head p{margin:8px 0 0; color:var(--muted); font-size:12px; line-height:1.7}
+    .modal-form{display:grid; gap:12px}
+    .modal-field label{display:block; font-size:12px; color:var(--muted); margin-bottom:8px}
+    .modal-field input, .modal-field select{
+      width:100%;
+      height:42px;
+      border-radius:12px;
+      border:1px solid rgba(148,163,184,.18);
+      background:rgba(11,18,32,.72);
+      color:var(--text);
+      padding:0 12px;
+      outline:none;
+    }
+    .modal-field input[readonly]{
+      background:rgba(255,255,255,.05);
+      color:#dceaff;
+    }
+    .score-link{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:34px;
+      padding:0 10px;
+      border-radius:10px;
+      border:1px solid rgba(86,167,255,.42);
+      background:rgba(86,167,255,.14);
+      color:#dceaff;
+      font-size:12px;
+      cursor:pointer;
+      transition:all .15s ease;
+    }
+    .score-link:hover{
+      transform:translateY(-1px);
+      background:rgba(86,167,255,.22);
+    }
+    .modal-grid{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0,1fr));
+      gap:12px;
+    }
+    .inline-input{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) auto;
+      gap:10px;
+      align-items:center;
+    }
+    .error-text{
+      min-height:18px;
+      color:#ffb3bb;
+      font-size:12px;
+      line-height:1.6;
+    }
+    .formula-box{
+      padding:12px;
+      border-radius:12px;
+      border:1px solid rgba(86,167,255,.18);
+      background:rgba(255,255,255,.03);
+      color:#dceaff;
+      font-size:12px;
+      line-height:1.8;
+      white-space:pre-line;
+    }
+    .hint{
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(255,145,77,.28);
+      background:rgba(255,145,77,.10);
+      color:#ffe8d8;
+      font-size:12px;
+      line-height:1.7;
+    }
+    .radio-row{display:flex; gap:12px; flex-wrap:wrap}
+    .radio{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(148,163,184,.18);
+      background:rgba(255,255,255,.03);
+      font-size:12px;
+      color:var(--text);
+      cursor:pointer;
+    }
+    .radio input{accent-color:var(--primary)}
+    .modal-kpis{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0, 1fr));
+      gap:10px;
+      margin-top:6px;
+    }
+    .kpi{
+      padding:12px;
+      border-radius:var(--radius-md);
+      border:1px solid rgba(255,255,255,.06);
+      background:rgba(255,255,255,.03);
+    }
+    .kpi small{display:block; color:var(--muted); font-size:12px; margin-bottom:8px}
+    .kpi strong{display:block; font-size:16px}
+    .modal-actions{
+      display:flex;
+      justify-content:flex-end;
+      gap:10px;
+      margin-top:14px;
+    }
+
+    @media (max-width: 1100px){
+      .app-shell{grid-template-columns:1fr}
+      .sidebar{position:relative; height:auto}
+      .overview-grid{grid-template-columns:repeat(2, minmax(0,1fr))}
+      .field-grid{grid-template-columns:repeat(2, minmax(0,1fr))}
+      .detail-grid{grid-template-columns:repeat(2, minmax(0,1fr))}
+    }
+    @media (max-width: 640px){
+      .overview-grid{grid-template-columns:1fr}
+      .field-grid{grid-template-columns:1fr}
+      .detail-grid{grid-template-columns:1fr}
+      .modal-grid{grid-template-columns:1fr}
+      .inline-input{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="eyebrow">ADL · 原型</div>
+      <h1>ADL（自动减仓）盈利减仓</h1>
+      <p>单文件 HTML 原型：包含币对配置、配置编辑页面、减仓列表、减仓详情（订单记录/成交记录）。可本地直接打开并演示筛选、分页与页面切换。</p>
+
+      <div class="nav-list">
+        <button class="nav-btn active" data-page="pair-config">
+          <strong>币对配置</strong>
+          <span>配置触发阈值与统计周期</span>
+        </button>
+        <button class="nav-btn" data-page="pair-users">
+          <strong>币对持仓用户</strong>
+          <span>按币对查看持仓用户</span>
+        </button>
+        <button class="nav-btn" data-page="adl-list">
+          <strong>减仓列表</strong>
+          <span>按交易对/用户查看减仓概览</span>
+        </button>
+        <button class="nav-btn" data-page="adl-detail">
+          <strong>减仓详情</strong>
+          <span>订单记录 / 成交记录</span>
+        </button>
+      </div>
+    </aside>
+
+    <main class="content">
+      <div class="overview-bar">
+        <div class="overview-bar__head">
+          <h3 id="overview-title">ADL（自动减仓）币对配置</h3>
+          <div class="pill-group" aria-label="统计维度">
+            <button type="button" class="pill active" data-gran="day">日</button>
+            <button type="button" class="pill" data-gran="week">周</button>
+            <button type="button" class="pill" data-gran="month">月</button>
+            <button type="button" class="pill" data-gran="total">总</button>
+          </div>
+        </div>
+        <div class="overview-grid" id="overview-grid"></div>
+      </div>
+
+      <section id="pair-config" class="page active">
+        <div class="section-card">
+          <div class="section-head">
+            <div>
+              <div class="breadcrumb"><span>后台</span><span>›</span><span>ADL减仓</span><span>›</span><b>币对配置</b></div>
+              <h3>ADL（自动减仓）币对配置</h3>
+            </div>
+            <div class="button-group">
+              <button type="button" class="button success" id="add-config">添加币对配置</button>
+            </div>
+          </div>
+
+          <div class="field-grid">
+            <div class="field">
+              <label>搜索币对</label>
+              <input id="pc-filter-key" type="text" placeholder="例如 BTC/USDT" />
+            </div>
+            <div class="field">
+              <label>状态</label>
+              <select id="pc-filter-status">
+                <option value="">全部状态</option>
+                <option value="warn">风险预警</option>
+                <option value="ok">正常</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>操作</label>
+              <div class="button-group">
+                <button type="button" class="button" id="pc-apply">查询</button>
+                <button type="button" class="button secondary" id="pc-reset">重置</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>币对</th>
+                  <th>最多多方向可亏损额(USDT)</th>
+                  <th>用户未来累计亏损额(USDT)</th>
+                  <th>已ADL减仓次数</th>
+                  <th>ADL盈余总盈亏(USDT)</th>
+                  <th>状态</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="pc-tbody"></tbody>
+            </table>
+          </div>
+
+          <div class="footer-row">
+            <div id="pc-summary">当前展示 0 条币对配置</div>
+            <div class="pagination">
+              <button type="button" class="page-chip" id="pc-prev">上一页</button>
+              <div id="pc-page">第 1 页 / 共 1 页</div>
+              <button type="button" class="page-chip" id="pc-next">下一页</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="config-editor" class="page">
+        <div class="section-card">
+          <div class="section-head">
+            <div>
+              <div class="breadcrumb"><span>后台</span><span>›</span><span>ADL减仓</span><span>›</span><span>币对配置</span><span>›</span><b>配置编辑</b></div>
+              <h3 id="cm-title">ADL减仓配置</h3>
+              <p style="margin:8px 0 0; color:var(--muted); font-size:12px; line-height:1.7;">在独立页面编辑交易对配置。点击保存配置后刷新币对配置列表与顶部数据概览。</p>
+            </div>
+            <div class="button-group">
+              <button type="button" class="button secondary" id="cm-close">返回列表</button>
+            </div>
+          </div>
+
+          <div class="modal-form">
+            <div class="modal-field">
+              <label for="cm-pair">交易对</label>
+              <select id="cm-pair"></select>
+            </div>
+            <div class="modal-field">
+              <label for="cm-max-loss">最多多方向可亏损额(USDT)</label>
+              <input id="cm-max-loss" type="number" min="0" step="1" />
+              <div class="hint">ADL减仓启动时，对应交易对方向（多头）允许的最大亏损额。超过阈值触发 ADL 减仓机制。</div>
+            </div>
+            <div class="modal-field">
+              <label for="cm-future-loss">用户未来累计亏损额(USDT)</label>
+              <input id="cm-future-loss" type="number" step="1" />
+              <div class="hint">用户未来累计亏损额用于风险参考；负数表示亏损。实际系统按平台口径计算，本原型用于交互演示。</div>
+            </div>
+            <div class="modal-field">
+              <label for="cm-long-bankruptcy-offset">多仓用户破产价偏移比例(%)</label>
+              <input id="cm-long-bankruptcy-offset" type="number" min="0" step="0.01" />
+              <div class="hint">用于按市价推导多仓用户破产价。计算口径：多仓用户破产价 = 市价 × (1 - 多仓用户破产价偏移比例)。例如配置 5，则表示按 5% 计算，即多仓用户破产价 = 市价 × (1 - 5%)。</div>
+            </div>
+            <div class="modal-field">
+              <label for="cm-short-bankruptcy-offset">空仓用户破产价偏移比例(%)</label>
+              <input id="cm-short-bankruptcy-offset" type="number" min="0" step="0.01" />
+              <div class="hint">用于按市价推导空仓用户破产价。计算口径：空仓用户破产价 = 市价 × (1 + 空仓用户破产价偏移比例)。例如配置 5，则表示按 5% 计算，即空仓用户破产价 = 市价 × (1 + 5%)。</div>
+            </div>
+            <div class="modal-field">
+              <label>重置用户累计数据</label>
+              <div class="radio-row" id="cm-cycle">
+                <label class="radio"><input type="radio" name="cm-cycle" value="day" checked />日</label>
+                <label class="radio"><input type="radio" name="cm-cycle" value="week" />周</label>
+                <label class="radio"><input type="radio" name="cm-cycle" value="month" />月</label>
+                <label class="radio"><input type="radio" name="cm-cycle" value="total" />总</label>
+              </div>
+              <div class="hint">选择重置周期为 ADL 统计的周期维度，系统可按周期重置累计盈亏与触发次数等统计。</div>
+            </div>
+            <div class="modal-kpis">
+              <div class="kpi">
+                <small>当前风控率</small>
+                <strong id="cm-risk-rate" class="text-danger">--</strong>
+              </div>
+              <div class="kpi">
+                <small>预计收益</small>
+                <strong id="cm-est-profit" class="text-ok">--</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="button secondary" id="cm-reset">重置</button>
+            <button type="button" class="button" id="cm-save">保存配置</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="pair-users" class="page">
+        <div class="section-card">
+          <div class="section-head">
+            <div>
+              <div class="breadcrumb"><span>后台</span><span>›</span><span>ADL减仓</span><span>›</span><b>币对持仓用户</b></div>
+              <h3>币对持仓用户列表</h3>
+            </div>
+            <div class="button-group">
+              <button type="button" class="button secondary" id="pu-back-config">返回币对配置</button>
+            </div>
+          </div>
+
+          <div class="field-grid">
+            <div class="field">
+              <label>交易对</label>
+              <select id="pu-filter-pair"></select>
+            </div>
+            <div class="field">
+              <label>用户ID</label>
+              <input id="pu-filter-user" type="text" placeholder="请输入用户ID" />
+            </div>
+            <div class="field">
+              <label>用户账号</label>
+              <input id="pu-filter-account" type="text" placeholder="请输入用户账号" />
+            </div>
+            <div class="field">
+              <label>操作</label>
+              <div class="button-group">
+                <button type="button" class="button" id="pu-apply">查询</button>
+                <button type="button" class="button secondary" id="pu-reset">重置</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>交易对</th>
+                  <th>用户ID</th>
+                  <th>用户账号</th>
+                  <th>持仓方向</th>
+                  <th>持仓数量(USDT)</th>
+                  <th>开仓均价</th>
+                  <th>标记价格</th>
+                  <th>未实现盈亏(USDT)</th>
+                  <th>杠杆</th>
+                  <th>分数</th>
+                  <th>最后更新时间</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="pu-tbody"></tbody>
+            </table>
+          </div>
+
+          <div class="footer-row">
+            <div id="pu-summary">当前展示 0 条持仓用户</div>
+            <div class="pagination">
+              <button type="button" class="page-chip" id="pu-prev">上一页</button>
+              <div id="pu-page">第 1 页 / 共 1 页</div>
+              <button type="button" class="page-chip" id="pu-next">下一页</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="adl-list" class="page">
+        <div class="section-card">
+          <div class="section-head">
+            <div>
+              <div class="breadcrumb"><span>后台</span><span>›</span><span>ADL减仓</span><span>›</span><b>减仓列表</b></div>
+              <h3>ADL减仓列表</h3>
+            </div>
+          </div>
+
+          <div class="field-grid">
+            <div class="field">
+              <label>交易对</label>
+              <select id="al-filter-pair"></select>
+            </div>
+            <div class="field">
+              <label>用户ID</label>
+              <input id="al-filter-user" type="text" placeholder="请输入用户ID" />
+            </div>
+            <div class="field">
+              <label>操作</label>
+              <div class="button-group">
+                <button type="button" class="button" id="al-apply">查询</button>
+                <button type="button" class="button secondary" id="al-reset">重置</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>交易对</th>
+                  <th>用户ID</th>
+                  <th>用户账号</th>
+                  <th>盈利阈值(%)</th>
+                  <th>减仓比例(%)</th>
+                  <th>减仓次数</th>
+                  <th>30天ADL减仓次数</th>
+                  <th>30天ADL减仓金额(USDT)</th>
+                  <th>减仓已实现盈亏(USDT)</th>
+                  <th>最新减仓时间</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="al-tbody"></tbody>
+            </table>
+          </div>
+
+          <div class="footer-row">
+            <div id="al-summary">当前展示 0 条减仓记录</div>
+            <div class="pagination">
+              <button type="button" class="page-chip" id="al-prev">上一页</button>
+              <div id="al-page">第 1 页 / 共 1 页</div>
+              <button type="button" class="page-chip" id="al-next">下一页</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="adl-detail" class="page">
+        <div class="section-card">
+          <div class="section-head">
+            <div>
+              <div class="breadcrumb"><span>后台</span><span>›</span><span>ADL减仓</span><span>›</span><b>减仓详情</b></div>
+              <h3>ADL减仓详情</h3>
+            </div>
+            <div class="button-group">
+              <button type="button" class="button secondary" id="back-to-list">返回列表</button>
+            </div>
+          </div>
+
+          <div class="detail-grid" id="detail-kpis"></div>
+
+          <div class="tabs" role="tablist" aria-label="详情Tab">
+            <button type="button" class="tab active" data-tab="orders">用户减仓订单记录</button>
+            <button type="button" class="tab" data-tab="fills">用户减仓成交记录</button>
+          </div>
+
+          <div class="field-grid" style="margin-top:12px;">
+            <div class="field">
+              <label>日期开始</label>
+              <input id="ad-date-start" type="date" />
+            </div>
+            <div class="field">
+              <label>日期结束</label>
+              <input id="ad-date-end" type="date" />
+            </div>
+            <div class="field">
+              <label>操作</label>
+              <div class="button-group">
+                <button type="button" class="button" id="ad-apply">查询</button>
+                <button type="button" class="button secondary" id="ad-reset">重置</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead id="ad-thead"></thead>
+              <tbody id="ad-tbody"></tbody>
+            </table>
+          </div>
+
+          <div class="footer-row">
+            <div id="ad-summary">当前展示 0 条记录</div>
+            <div class="pagination">
+              <button type="button" class="page-chip" id="ad-prev">上一页</button>
+              <div id="ad-page">第 1 页 / 共 1 页</div>
+              <button type="button" class="page-chip" id="ad-next">下一页</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <button type="button" class="button secondary spec-toggle" id="spec-toggle">展开口径定义文档</button>
+  <aside class="spec-sidebar collapsed" id="spec-sidebar">
+    <h3>口径说明</h3>
+    <div class="spec-card">
+      <strong>全局口径定义</strong>
+      <span>本原型所有计数字段（总数、次数、页码等）统一展示为整数；金额字段统一展示为 USDT，展示最多 8 位小数，末尾为 0 的小数位不展示；未实现盈亏字段统一展示最多 8 位小数，末尾为 0 的小数位不展示；时间展示格式为 YYYY-MM-DD HH:mm:ss。页面中涉及交易对价格、持仓数量、持仓方向、开仓均价、标记价格、当前价等展示字段，均以后端币对配置及后端实时返回结果为准，原型仅作交互与页面呈现演示。</span>
+    </div>
+    <div class="spec-card">
+      <strong>顶部统计维度（日 / 周 / 月 / 总）</strong>
+      <span>页面顶部的“日 / 周 / 月 / 总”为全局统计维度切换项，默认选中“日”。日表示按当日自然日口径汇总当前页面顶部数据概览；周表示按当前自然周口径汇总；月表示按当前自然月口径汇总；总表示按系统当前可统计全量周期汇总。该切换项统一作用于顶部数据概览卡片，不直接改变列表字段结构；列表是否联动统计维度，以各列表自身筛选与排序规则为准。</span>
+    </div>
+
+    <div class="spec-page active" data-spec-page="pair-config">
+      <div class="spec-card">
+        <strong>币对配置</strong>
+        <span>展示 ADL 盈利减仓的交易对级配置，用于定义触发阈值、统计周期与风控预警状态。列表支持按币对关键字和状态筛选，并分页展示。</span>
+      </div>
+      <div class="spec-card">
+        <strong>最多多方向可亏损额(USDT)</strong>
+        <span>该交易对触发 ADL 盈利减仓时，多方向允许承受的最大可亏损额阈值。当系统识别到多方向风险超过阈值时，触发对应减仓处置。</span>
+      </div>
+      <div class="spec-card">
+        <strong>用户未来累计亏损额(USDT)</strong>
+        <span>用于描述该交易对下用户未来累计盈亏的风险参考值；负数表示亏损，数值越小代表风险越高。实际系统可用平台规则计算并落库，本原型仅作展示与筛选演示。</span>
+      </div>
+      <div class="spec-card">
+        <strong>状态</strong>
+        <span>状态取值固定为风险预警/正常。风险预警用于提示该交易对当前风险接近触发线或已发生减仓事件；正常表示近期风险低于预警阈值。</span>
+      </div>
+      <div class="spec-card">
+        <strong>配置编辑入口</strong>
+        <span>点击“添加币对配置”或列表“编辑”进入独立配置编辑页面，不再使用弹窗。编辑页支持选择交易对、设置最多多方向可亏损额、设置用户未来累计亏损额、设置多仓用户破产价偏移比例、设置空仓用户破产价偏移比例、选择重置周期（日/周/月/总），并展示当前风控率与预计收益等参考指标。</span>
+      </div>
+      <div class="spec-card">
+        <strong>多仓用户破产价偏移比例(%) / 空仓用户破产价偏移比例(%)</strong>
+        <span>两项配置均用于按触发时市场价格推导用户破产价。多仓用户破产价 = 市价 × (1 - 多仓用户破产价偏移比例)；空仓用户破产价 = 市价 × (1 + 空仓用户破产价偏移比例)。配置值按百分比理解，例如输入 5 表示 5%，实际计算时换算为 0.05。</span>
+      </div>
+      <div class="spec-card">
+        <strong>状态点击结果</strong>
+        <span>币对配置列表中的“风险预警”为可点击结果标签。点击后打开结果弹窗，展示该币对的最多多方向可亏损额、用户未来累计亏损额、风险比率、当前状态、30天已ADL次数以及状态判定公式，便于核对预警来源；“正常”状态仅展示结果标签，不弹出结果说明。</span>
+      </div>
+      <div class="spec-card">
+        <strong>分页</strong>
+        <span>当币对配置总数大于 8 条时分页展示，每页固定 8 条，支持上一页和下一页切换。</span>
+      </div>
+    </div>
+
+    <div class="spec-page" data-spec-page="config-editor">
+      <div class="spec-card">
+        <strong>配置编辑页面</strong>
+        <span>点击“添加币对配置”或列表“编辑”进入独立配置编辑页面，不再使用弹窗。页面展示完整配置字段、风险参考说明、风控率与预计收益参考值，适合长字段与多参数场景录入。</span>
+      </div>
+      <div class="spec-card">
+        <strong>页面价格与数量来源</strong>
+        <span>配置编辑页中涉及交易对、市价推导、破产价偏移比例等参数，均以后端币对配置为准；后续页面展示的持仓数量、开仓均价、标记价格、当前价及相关价格结果，均以后端返回的该币对配置与实时数据为准，前端不自行重算基础行情口径。</span>
+      </div>
+      <div class="spec-card">
+        <strong>多仓用户破产价偏移比例(%) / 空仓用户破产价偏移比例(%)</strong>
+        <span>两项配置均用于按触发时市场价格推导用户破产价。多仓用户破产价 = 市价 × (1 - 多仓用户破产价偏移比例)；空仓用户破产价 = 市价 × (1 + 空仓用户破产价偏移比例)。配置值按百分比理解，例如输入 5 表示 5%，实际计算时换算为 0.05。</span>
+      </div>
+      <div class="spec-card">
+        <strong>保存与返回</strong>
+        <span>点击“保存配置”后回写当前交易对配置，并刷新币对配置列表与顶部数据概览；点击“返回列表”返回币对配置列表页，不保存未确认修改。</span>
+      </div>
+    </div>
+
+    <div class="spec-page" data-spec-page="pair-users">
+      <div class="spec-card">
+        <strong>币对持仓用户列表</strong>
+        <span>展示某个交易对下当前存在持仓的用户列表，用于快速查看持仓风险敞口。支持按交易对、用户ID、用户账号筛选，并分页展示。列表排序口径与 ADL 减仓列表保持一致，按全局综合排序值从高到低排序。</span>
+      </div>
+      <div class="spec-card">
+        <strong>持仓数量(USDT)</strong>
+        <span>用户在该交易对下的持仓名义价值（按 USDT 计价）。该字段以后端币对配置和后端持仓结果为准，前端仅按接口返回结果展示，不自行调整基础持仓数量口径。</span>
+      </div>
+      <div class="spec-card">
+        <strong>开仓均价 / 标记价格</strong>
+        <span>币对持仓用户列表中的开仓均价、标记价格以及相关详情页中的当前价，均以后端该币对配置和实时行情返回结果为准。前端不以本地演示数据重新推导真实行情，仅负责展示与交互联动。</span>
+      </div>
+      <div class="spec-card">
+        <strong>未实现盈亏(USDT)</strong>
+        <span>持仓的当前未实现盈亏（按 USDT 计价）。正数表示盈利，负数表示亏损。展示最多保留 8 位小数，末尾为 0 的小数位不展示；该字段以后端返回结果为准。</span>
+      </div>
+      <div class="spec-card">
+        <strong>分数与排序</strong>
+        <span>币对持仓用户列表与 ADL 减仓列表使用同一套全局排序公式。公式如下：盈亏百分比 = 未实现收益 ÷ 绝对值(名目仓位)；有效杠杆 = 绝对值(名目仓位) ÷ (钱包余额 + 未实现收益)，当钱包余额 + 未实现收益小于等于 0 时分母按 1 处理；若盈亏百分比大于等于 0，则基础排序值 = 盈亏百分比 × 有效杠杆；若盈亏百分比小于 0，则基础排序值 = 盈亏百分比 ÷ 有效杠杆；次数惩罚分位值 = (用户总数 - 30天ADL减仓次数排名 + 1) ÷ 用户总数；金额惩罚分位值 = (用户总数 - 30天ADL减仓金额排名 + 1) ÷ 用户总数；公平调节系数 = 1 + 0.35 × 次数惩罚分位值 + 0.15 × 金额惩罚分位值；当基础排序值大于等于 0 时，综合排序值 = 基础排序值 ÷ 公平调节系数；当基础排序值小于 0 时，综合排序值 = 基础排序值 × 公平调节系数。示例：若当前用户总数为 10，该用户 30天ADL减仓次数排名第 1、30天ADL减仓金额排名第 1，则次数惩罚分位值 = (10 - 1 + 1) ÷ 10 = 1，金额惩罚分位值 = (10 - 1 + 1) ÷ 10 = 1，公平调节系数 = 1 + 0.35 × 1 + 0.15 × 1 = 1.5；若该用户基础排序值 = 0.40645161，则综合排序值 = 0.40645161 ÷ 1.5 = 0.27096774。以上三个值的来源分别是：次数惩罚分位值来自 30 天 ADL 次数在全体用户中的排名，金额惩罚分位值来自 30 天 ADL 金额在全体用户中的排名，公平调节系数来自前两个分位值代入公式后的结果。影响说明：30天ADL减仓次数越多、30天ADL减仓金额越大，说明该用户近 30 天已经承担了更多 ADL，对应排名会更靠前，次数惩罚分位值和金额惩罚分位值会更大，进而让公平调节系数更大，排序更有可能向后延。对基础排序值为正的用户，公平调节系数越大，综合排序值越小，越不容易继续排在前面被优先 ADL；对基础排序值为负的用户，公平调节系数越大，综合排序值越负，同样会被进一步后置。列表中的分数字段即综合排序值，展示最多 8 位小数；点击分数可查看相关计算参数与计算过程；页面按分数从高到低排序，若分数相同，则按最后更新时间倒序，再按用户ID倒序。</span>
+      </div>
+      <div class="spec-card">
+        <strong>操作-减仓详情</strong>
+        <span>点击“减仓详情”跳转至减仓详情页，默认打开订单记录 Tab，并展示该用户在该交易对下的减仓明细；若该用户暂无减仓记录，则展示空列表。</span>
+      </div>
+      <div class="spec-card">
+        <strong>操作-手动ADL减仓</strong>
+        <span>点击“手动ADL减仓”在当前页打开弹窗。弹窗字段包含破产价、当前价、持仓数量、持仓方向、持仓均价、平仓数量、平仓后用户盈亏显示、谷歌验证码、确认、取消。破产价为可输入字段，其余展示字段按当前持仓数据回填；其中当前价、持仓数量、持仓方向、持仓均价以后端币对配置与后端持仓结果为准。平仓后用户盈亏显示按破产价、平仓数量、持仓方向、持仓均价实时联动计算；确认后更新持仓用户列表、减仓列表和减仓详情演示数据。</span>
+      </div>
+      <div class="spec-card">
+        <strong>分页</strong>
+        <span>当币对持仓用户总数大于 8 条时分页展示，每页固定 8 条，支持上一页和下一页切换。</span>
+      </div>
+    </div>
+
+    <div class="spec-page" data-spec-page="adl-list">
+      <div class="spec-card">
+        <strong>减仓列表</strong>
+        <span>展示发生过 ADL 盈利减仓的用户维度汇总列表。支持按交易对与用户ID筛选，支持分页展示。</span>
+      </div>
+      <div class="spec-card">
+        <strong>全局排序规则</strong>
+        <span>ADL 减仓用户列表按全局候选用户池统一计算排序，页面筛选仅影响展示结果，不改变用户在当前排序中的全局位置。基础排序值计算规则为：盈亏百分比 = 未实现收益 ÷ 绝对值(名目仓位)；有效杠杆 = 绝对值(名目仓位) ÷ (钱包余额 + 未实现收益)，当钱包余额 + 未实现收益小于等于 0 时，分母按 1 处理；若盈亏百分比大于等于 0，则基础排序值 = 盈亏百分比 × 有效杠杆；若盈亏百分比小于 0，则基础排序值 = 盈亏百分比 ÷ 有效杠杆；杠杆盈亏分位数 = 用户排名 ÷ 用户总数，其中用户排名按基础排序值从高到低排序，排名 1 为最高优先级。</span>
+      </div>
+      <div class="spec-card">
+        <strong>30天ADL减仓次数 / 30天ADL减仓金额</strong>
+        <span>30天ADL减仓次数指当前时间向前滚动 30 个自然日内该用户累计被 ADL 的次数；30天ADL减仓金额指同一时间范围内该用户累计被 ADL 的减仓金额绝对值总和，单位为 USDT。</span>
+      </div>
+      <div class="spec-card">
+        <strong>公平修正公式</strong>
+        <span>为避免短期内同一批高盈利用户被重复减仓过多次，列表在基础排序值之上追加公平修正。次数惩罚分位值 = (用户总数 - 30天ADL减仓次数排名 + 1) ÷ 用户总数，其中次数排名按 30 天 ADL 减仓次数从高到低排序；金额惩罚分位值 = (用户总数 - 30天ADL减仓金额排名 + 1) ÷ 用户总数，其中金额排名按 30 天 ADL 减仓金额从高到低排序。公平调节系数 = 1 + 0.35 × 次数惩罚分位值 + 0.15 × 金额惩罚分位值。最终综合排序值：当基础排序值大于等于 0 时，综合排序值 = 基础排序值 ÷ 公平调节系数；当基础排序值小于 0 时，综合排序值 = 基础排序值 × 公平调节系数。示例：若用户总数为 10，某用户 30天ADL减仓次数排名第 1，次数惩罚分位值 = 1；30天ADL减仓金额排名第 1，金额惩罚分位值 = 1；则公平调节系数 = 1 + 0.35 × 1 + 0.15 × 1 = 1.5。若该用户基础排序值为 0.40645161，则综合排序值 = 0.40645161 ÷ 1.5 = 0.27096774。需要明确的是：次数越多、金额越大，对应的分位值越大，公平调节系数也越大，排序就越有可能往后延；也就是平台会优先降低这些近 30 天已被频繁 ADL、或累计承担较大 ADL 金额用户的再次触发优先级。页面最终按综合排序值从高到低排序；若综合排序值相同，则按最新减仓时间倒序，再按用户ID倒序。次数权重大于金额权重，是为了优先减少同一用户在短期内被重复 ADL 的概率；金额仅作次级修正，避免大仓位用户因名义仓位更大而被过度惩罚。点击列表中的分数，可查看该用户的名目仓位、未实现收益、钱包余额、盈亏百分比、有效杠杆、次数分位值、金额分位值、公平调节系数与最终综合排序值。</span>
+      </div>
+      <div class="spec-card">
+        <strong>盈利阈值(%)</strong>
+        <span>触发盈利减仓的盈利率阈值，达到阈值后触发自动减仓处置。展示为百分比整数。</span>
+      </div>
+      <div class="spec-card">
+        <strong>减仓比例(%)</strong>
+        <span>每次触发减仓时对持仓进行的减仓比例，展示为百分比整数。</span>
+      </div>
+      <div class="spec-card">
+        <strong>减仓已实现盈亏(USDT)</strong>
+        <span>该用户在该交易对下因 ADL 减仓产生的累计已实现盈亏，正数表示盈利，负数表示亏损。</span>
+      </div>
+      <div class="spec-card">
+        <strong>跳转到详情</strong>
+        <span>点击“订单记录/成交记录”进入减仓详情页，默认打开对应 Tab，并显示该用户在该交易对下的明细记录。</span>
+      </div>
+      <div class="spec-card">
+        <strong>分页</strong>
+        <span>当减仓列表总数大于 8 条时分页展示，每页固定 8 条，支持上一页和下一页切换。</span>
+      </div>
+    </div>
+
+    <div class="spec-page" data-spec-page="adl-detail">
+      <div class="spec-card">
+        <strong>减仓详情</strong>
+        <span>详情页顶部展示用户减仓信息汇总（交易对、用户ID、用户账号、盈利阈值、减仓比例、减仓次数、累计已实现盈亏、最新减仓时间）。下方通过 Tab 切换展示订单记录与成交记录，并支持按日期区间筛选。</span>
+      </div>
+      <div class="spec-card">
+        <strong>订单记录</strong>
+        <span>展示每笔减仓订单的关键字段：减仓时间、开仓方向、减仓数量(USDT)、减仓时实时价格、订单成交均价、减仓盈亏(USDT)、减仓后盈利率(%)、订单状态。其中减仓时实时价格、订单成交均价、减仓数量以后端币对配置与订单返回结果为准；涉及盈亏金额展示时，最多保留 8 位小数，末尾为 0 的小数位不展示。</span>
+      </div>
+      <div class="spec-card">
+        <strong>成交记录</strong>
+        <span>展示订单的成交明细：成交ID、订单ID、交易对、成交时间、成交数量(USDT)、成交价格、成交金额(USDT)、手续费(USDT)、成交盈亏(USDT)。其中成交价格、成交数量、成交金额以后端成交回报为准；涉及盈亏与金额字段时，最多保留 8 位小数，末尾为 0 的小数位不展示。</span>
+      </div>
+      <div class="spec-card">
+        <strong>日期筛选</strong>
+        <span>日期开始与日期结束按明细记录的发生日期筛选；开始日期为大于等于，结束日期为小于等于。若未选择日期则默认不过滤。</span>
+      </div>
+      <div class="spec-card">
+        <strong>分页</strong>
+        <span>当详情明细记录总数大于 8 条时分页展示，每页固定 8 条，支持上一页和下一页切换。</span>
+      </div>
+    </div>
+  </aside>
+
+  <div class="modal" id="status-result-modal">
+    <div class="modal-panel">
+      <div class="modal-head">
+        <div>
+          <h4 id="srm-title">风险预警结果</h4>
+          <p>展示该币对当前状态的计算结果与判定说明，便于业务、开发和测试核对预警来源。</p>
+        </div>
+        <button type="button" class="button secondary" id="srm-close">关闭</button>
+      </div>
+      <div class="modal-form">
+        <div class="modal-grid" id="srm-grid"></div>
+        <div class="formula-box" id="srm-formula"></div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="button secondary" id="srm-cancel">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="manual-adl-modal">
+    <div class="modal-panel">
+      <div class="modal-head">
+        <div>
+          <h4 id="mam-title">手动ADL减仓</h4>
+          <p>在当前页对持仓用户发起手动 ADL 减仓。确认后同步刷新持仓用户列表、减仓列表和对应详情页演示数据。</p>
+        </div>
+        <button type="button" class="button secondary" id="mam-close">关闭</button>
+      </div>
+
+      <div class="modal-form">
+        <div class="modal-grid">
+          <div class="modal-field">
+            <label for="mam-bankruptcy">破产价</label>
+            <input id="mam-bankruptcy" type="number" min="0" step="0.01" />
+          </div>
+          <div class="modal-field">
+            <label for="mam-current-price">当前价</label>
+            <input id="mam-current-price" type="text" readonly />
+          </div>
+        </div>
+        <div class="modal-grid">
+          <div class="modal-field">
+            <label for="mam-position-qty">持仓数量</label>
+            <input id="mam-position-qty" type="text" readonly />
+          </div>
+          <div class="modal-field">
+            <label for="mam-position-side">持仓方向</label>
+            <input id="mam-position-side" type="text" readonly />
+          </div>
+        </div>
+        <div class="modal-grid">
+          <div class="modal-field">
+            <label for="mam-entry-price">持仓均价</label>
+            <input id="mam-entry-price" type="text" readonly />
+          </div>
+          <div class="modal-field">
+            <label for="mam-close-qty">平仓数量</label>
+            <input id="mam-close-qty" type="number" min="0" step="0.01" />
+          </div>
+        </div>
+        <div class="hint">平仓数量默认按 USDT 口径输入，不能大于当前持仓数量。平仓后用户盈亏显示按持仓方向计算：多仓按（破产价 - 持仓均价）÷ 持仓均价 × 平仓数量计算，空仓按（持仓均价 - 破产价）÷ 持仓均价 × 平仓数量计算。</div>
+        <div class="modal-field">
+          <label for="mam-after-pnl">平仓后用户盈亏显示</label>
+          <input id="mam-after-pnl" type="text" readonly />
+        </div>
+        <div class="modal-field">
+          <label for="mam-google-code">谷歌验证码</label>
+          <div class="inline-input">
+            <input id="mam-google-code" type="text" inputmode="numeric" placeholder="请输入谷歌验证码" />
+            <button type="button" class="button secondary" id="mam-google-fill">获取验证码</button>
+          </div>
+        </div>
+        <div class="error-text" id="mam-error"></div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="button secondary" id="mam-cancel">取消</button>
+        <button type="button" class="button" id="mam-confirm">确认</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="score-detail-modal">
+    <div class="modal-panel">
+      <div class="modal-head">
+        <div>
+          <h4 id="sdm-title">分数计算详情</h4>
+          <p>展示当前用户分数的相关计算参数与公式展开，便于开发、测试和业务核对排序结果。</p>
+        </div>
+        <button type="button" class="button secondary" id="sdm-close">关闭</button>
+      </div>
+      <div class="modal-form">
+        <div class="modal-grid" id="sdm-grid"></div>
+        <div class="formula-box" id="sdm-formula"></div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="button secondary" id="sdm-cancel">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const navButtons = Array.from(document.querySelectorAll('.nav-btn'));
+      const pages = Array.from(document.querySelectorAll('.page'));
+      const specPages = Array.from(document.querySelectorAll('.spec-page'));
+      const specSidebar = document.getElementById('spec-sidebar');
+      const specToggle = document.getElementById('spec-toggle');
+      const overviewTitle = document.getElementById('overview-title');
+      const overviewGrid = document.getElementById('overview-grid');
+      const pills = Array.from(document.querySelectorAll('.pill'));
+
+      const pcFilterKey = document.getElementById('pc-filter-key');
+      const pcFilterStatus = document.getElementById('pc-filter-status');
+      const pcApply = document.getElementById('pc-apply');
+      const pcReset = document.getElementById('pc-reset');
+      const pcTbody = document.getElementById('pc-tbody');
+      const pcSummary = document.getElementById('pc-summary');
+      const pcPrev = document.getElementById('pc-prev');
+      const pcNext = document.getElementById('pc-next');
+      const pcPage = document.getElementById('pc-page');
+      const addConfigBtn = document.getElementById('add-config');
+
+      const puBackConfig = document.getElementById('pu-back-config');
+      const puFilterPair = document.getElementById('pu-filter-pair');
+      const puFilterUser = document.getElementById('pu-filter-user');
+      const puFilterAccount = document.getElementById('pu-filter-account');
+      const puApply = document.getElementById('pu-apply');
+      const puReset = document.getElementById('pu-reset');
+      const puTbody = document.getElementById('pu-tbody');
+      const puSummary = document.getElementById('pu-summary');
+      const puPrev = document.getElementById('pu-prev');
+      const puNext = document.getElementById('pu-next');
+      const puPage = document.getElementById('pu-page');
+
+      const alFilterPair = document.getElementById('al-filter-pair');
+      const alFilterUser = document.getElementById('al-filter-user');
+      const alApply = document.getElementById('al-apply');
+      const alReset = document.getElementById('al-reset');
+      const alTbody = document.getElementById('al-tbody');
+      const alSummary = document.getElementById('al-summary');
+      const alPrev = document.getElementById('al-prev');
+      const alNext = document.getElementById('al-next');
+      const alPage = document.getElementById('al-page');
+
+      const backToList = document.getElementById('back-to-list');
+      const detailKpis = document.getElementById('detail-kpis');
+      const tabs = Array.from(document.querySelectorAll('.tab'));
+      const adDateStart = document.getElementById('ad-date-start');
+      const adDateEnd = document.getElementById('ad-date-end');
+      const adApply = document.getElementById('ad-apply');
+      const adReset = document.getElementById('ad-reset');
+      const adThead = document.getElementById('ad-thead');
+      const adTbody = document.getElementById('ad-tbody');
+      const adSummary = document.getElementById('ad-summary');
+      const adPrev = document.getElementById('ad-prev');
+      const adNext = document.getElementById('ad-next');
+      const adPage = document.getElementById('ad-page');
+
+      const cmClose = document.getElementById('cm-close');
+      const cmPair = document.getElementById('cm-pair');
+      const cmMaxLoss = document.getElementById('cm-max-loss');
+      const cmFutureLoss = document.getElementById('cm-future-loss');
+      const cmLongBankruptcyOffset = document.getElementById('cm-long-bankruptcy-offset');
+      const cmShortBankruptcyOffset = document.getElementById('cm-short-bankruptcy-offset');
+      const cmRiskRate = document.getElementById('cm-risk-rate');
+      const cmEstProfit = document.getElementById('cm-est-profit');
+      const cmReset = document.getElementById('cm-reset');
+      const cmSave = document.getElementById('cm-save');
+      const cmTitle = document.getElementById('cm-title');
+      const cmCycleGroup = document.getElementById('cm-cycle');
+      const statusResultModal = document.getElementById('status-result-modal');
+      const srmTitle = document.getElementById('srm-title');
+      const srmClose = document.getElementById('srm-close');
+      const srmCancel = document.getElementById('srm-cancel');
+      const srmGrid = document.getElementById('srm-grid');
+      const srmFormula = document.getElementById('srm-formula');
+
+      const manualAdlModal = document.getElementById('manual-adl-modal');
+      const mamTitle = document.getElementById('mam-title');
+      const mamClose = document.getElementById('mam-close');
+      const mamCancel = document.getElementById('mam-cancel');
+      const mamConfirm = document.getElementById('mam-confirm');
+      const mamBankruptcy = document.getElementById('mam-bankruptcy');
+      const mamCurrentPrice = document.getElementById('mam-current-price');
+      const mamPositionQty = document.getElementById('mam-position-qty');
+      const mamPositionSide = document.getElementById('mam-position-side');
+      const mamEntryPrice = document.getElementById('mam-entry-price');
+      const mamCloseQty = document.getElementById('mam-close-qty');
+      const mamAfterPnl = document.getElementById('mam-after-pnl');
+      const mamGoogleCode = document.getElementById('mam-google-code');
+      const mamGoogleFill = document.getElementById('mam-google-fill');
+      const mamError = document.getElementById('mam-error');
+      const scoreDetailModal = document.getElementById('score-detail-modal');
+      const sdmTitle = document.getElementById('sdm-title');
+      const sdmClose = document.getElementById('sdm-close');
+      const sdmCancel = document.getElementById('sdm-cancel');
+      const sdmGrid = document.getElementById('sdm-grid');
+      const sdmFormula = document.getElementById('sdm-formula');
+
+      const state = {
+        granularity: 'day',
+        pcPage: 1,
+        puPage: 1,
+        alPage: 1,
+        adPage: 1,
+        adTab: 'orders',
+        activeUserKey: '',
+        activePair: 'BTC/USDT',
+        activeManualKey: ''
+      };
+
+      const pairUniverse = ['BTC/USDT', 'ETH/USDT', 'BNB/USDT', 'SOL/USDT', 'XRP/USDT', 'DOGE/USDT', 'SUI/USDT', 'AVAX/USDT', 'ADA/USDT', 'LINK/USDT', 'TON/USDT', 'TRX/USDT'];
+
+      const pairConfigs = [
+        { pair: 'BTC/USDT', maxLongLoss: 500000, futureLoss: -485200, adlCount: 3, pnl: 28500, status: 'warn', cycle: 'day', longBankruptcyOffset: 5, shortBankruptcyOffset: 5 },
+        { pair: 'ETH/USDT', maxLongLoss: 300000, futureLoss: -125800, adlCount: 1, pnl: 15200, status: 'ok', cycle: 'day', longBankruptcyOffset: 4.5, shortBankruptcyOffset: 4.5 },
+        { pair: 'BNB/USDT', maxLongLoss: 200000, futureLoss: -198500, adlCount: 2, pnl: 8300, status: 'warn', cycle: 'week', longBankruptcyOffset: 5.5, shortBankruptcyOffset: 5.5 },
+        { pair: 'SOL/USDT', maxLongLoss: 150000, futureLoss: -65200, adlCount: 0, pnl: 0, status: 'ok', cycle: 'month', longBankruptcyOffset: 6, shortBankruptcyOffset: 6 },
+        { pair: 'XRP/USDT', maxLongLoss: 120000, futureLoss: -21500, adlCount: 0, pnl: 0, status: 'ok', cycle: 'total', longBankruptcyOffset: 4, shortBankruptcyOffset: 4 },
+        { pair: 'DOGE/USDT', maxLongLoss: 90000, futureLoss: -55800, adlCount: 1, pnl: 4200, status: 'warn', cycle: 'day', longBankruptcyOffset: 6.5, shortBankruptcyOffset: 6.5 },
+        { pair: 'SUI/USDT', maxLongLoss: 70000, futureLoss: -7200, adlCount: 0, pnl: 0, status: 'ok', cycle: 'week', longBankruptcyOffset: 4.2, shortBankruptcyOffset: 4.2 },
+        { pair: 'AVAX/USDT', maxLongLoss: 80000, futureLoss: -18200, adlCount: 0, pnl: 0, status: 'ok', cycle: 'month', longBankruptcyOffset: 4.8, shortBankruptcyOffset: 4.8 },
+        { pair: 'ADA/USDT', maxLongLoss: 60000, futureLoss: -9500, adlCount: 0, pnl: 0, status: 'ok', cycle: 'total', longBankruptcyOffset: 3.8, shortBankruptcyOffset: 3.8 },
+        { pair: 'LINK/USDT', maxLongLoss: 65000, futureLoss: -13600, adlCount: 0, pnl: 0, status: 'ok', cycle: 'day', longBankruptcyOffset: 4.3, shortBankruptcyOffset: 4.3 },
+        { pair: 'TON/USDT', maxLongLoss: 72000, futureLoss: -54000, adlCount: 1, pnl: 6800, status: 'warn', cycle: 'week', longBankruptcyOffset: 5.2, shortBankruptcyOffset: 5.2 },
+        { pair: 'TRX/USDT', maxLongLoss: 50000, futureLoss: -7800, adlCount: 0, pnl: 0, status: 'ok', cycle: 'month', longBankruptcyOffset: 3.5, shortBankruptcyOffset: 3.5 }
+      ];
+
+      const adlUsers = [
+        { pair: 'BTC/USDT', userId: '10001', account: 'user_btc_001', profitThreshold: 50, reduceRatio: 20, reduceTimes: 3, realizedPnl: 28500, lastAt: '2025-07-15 14:30:00', walletBalance: 18400, nominalPosition: 120000, unrealizedPnl: 12600, adl30dCount: 3, adl30dAmount: 28500 },
+        { pair: 'BTC/USDT', userId: '10002', account: 'user_btc_002', profitThreshold: 60, reduceRatio: 25, reduceTimes: 5, realizedPnl: 45200, lastAt: '2025-07-15 15:45:00', walletBalance: 16200, nominalPosition: 135000, unrealizedPnl: 22100, adl30dCount: 5, adl30dAmount: 45200 },
+        { pair: 'BTC/USDT', userId: '10003', account: 'user_btc_003', profitThreshold: 45, reduceRatio: 30, reduceTimes: 2, realizedPnl: 15800, lastAt: '2025-07-15 12:20:00', walletBalance: 14900, nominalPosition: 96000, unrealizedPnl: 9800, adl30dCount: 2, adl30dAmount: 15800 },
+        { pair: 'BTC/USDT', userId: '10004', account: 'user_btc_004', profitThreshold: 55, reduceRatio: 15, reduceTimes: 1, realizedPnl: 8200, lastAt: '2025-07-15 09:30:00', walletBalance: 13200, nominalPosition: 72000, unrealizedPnl: 6100, adl30dCount: 1, adl30dAmount: 8200 },
+        { pair: 'BTC/USDT', userId: '10005', account: 'user_btc_005', profitThreshold: 40, reduceRatio: 35, reduceTimes: 4, realizedPnl: 22600, lastAt: '2025-07-15 16:00:00', walletBalance: 17600, nominalPosition: 110000, unrealizedPnl: 14200, adl30dCount: 4, adl30dAmount: 22600 },
+        { pair: 'ETH/USDT', userId: '20001', account: 'user_eth_001', profitThreshold: 45, reduceRatio: 20, reduceTimes: 2, realizedPnl: 15200, lastAt: '2025-07-15 10:05:00', walletBalance: 9200, nominalPosition: 42000, unrealizedPnl: 1680, adl30dCount: 2, adl30dAmount: 15200 },
+        { pair: 'BNB/USDT', userId: '30001', account: 'user_bnb_001', profitThreshold: 55, reduceRatio: 18, reduceTimes: 2, realizedPnl: 8300, lastAt: '2025-07-14 18:24:00', walletBalance: 7800, nominalPosition: 28000, unrealizedPnl: 720, adl30dCount: 2, adl30dAmount: 8300 },
+        { pair: 'DOGE/USDT', userId: '40001', account: 'user_doge_001', profitThreshold: 35, reduceRatio: 30, reduceTimes: 1, realizedPnl: 4200, lastAt: '2025-07-15 08:12:00', walletBalance: 3400, nominalPosition: 15000, unrealizedPnl: 540, adl30dCount: 1, adl30dAmount: 4200 },
+        { pair: 'TON/USDT', userId: '50001', account: 'user_ton_001', profitThreshold: 48, reduceRatio: 22, reduceTimes: 1, realizedPnl: 6800, lastAt: '2025-07-15 11:40:00', walletBalance: 6200, nominalPosition: 23000, unrealizedPnl: 1380, adl30dCount: 1, adl30dAmount: 6800 }
+      ];
+
+      const orderRecords = {
+        'BTC/USDT|10001': [
+          { at: '2025-07-15 14:30:00', side: '多仓', qty: 5000, markPrice: 67500, avgPrice: 67480, pnl: 8500, afterProfitRate: 45, status: '已完成' },
+          { at: '2025-07-15 12:15:00', side: '空仓', qty: 8000, markPrice: 67200, avgPrice: 67185, pnl: 12000, afterProfitRate: 48, status: '已完成' },
+          { at: '2025-07-15 10:00:00', side: '多仓', qty: 6000, markPrice: 67000, avgPrice: 66990, pnl: 8000, afterProfitRate: 52, status: '已完成' }
+        ]
+      };
+
+      const fillRecords = {
+        'BTC/USDT|10001': [
+          { fillId: 'TRD202507150001', orderId: 'ADL202507150001', pair: 'BTC/USDT', at: '2025-07-15 14:30:05', qty: 5000, price: 67480, amount: 337400, fee: -3.37, pnl: 8500 },
+          { fillId: 'TRD202507150002', orderId: 'ADL202507150001', pair: 'BTC/USDT', at: '2025-07-15 14:30:06', qty: 100, price: 67475, amount: 6747.5, fee: -0.07, pnl: 150 },
+          { fillId: 'TRD202507150003', orderId: 'ADL202507150002', pair: 'BTC/USDT', at: '2025-07-15 12:15:10', qty: 8000, price: 67185, amount: 537480, fee: -3.57, pnl: 12000 },
+          { fillId: 'TRD202507150004', orderId: 'ADL202507150003', pair: 'BTC/USDT', at: '2025-07-15 10:00:12', qty: 6000, price: 66990, amount: 401940, fee: -4.02, pnl: 8000 }
+        ]
+      };
+
+      const pageSize = 8;
+      let activeEditPair = '';
+      const manualGoogleDemoCode = '624981';
+
+      const pairPositions = [
+        { pair: 'BTC/USDT', userId: '10001', account: 'user_btc_001', side: '多仓', valueU: 120000, entryPrice: 63500, markPrice: 67480, upnl: 12600, leverage: 20, walletBalance: 18400, adl30dCount: 3, adl30dAmount: 28500, updatedAt: '2025-07-15 14:32:10' },
+        { pair: 'BTC/USDT', userId: '10006', account: 'user_btc_006', side: '空仓', valueU: 54000, entryPrice: 68220, markPrice: 67480, upnl: 980, leverage: 10, walletBalance: 6200, adl30dCount: 1, adl30dAmount: 3600, updatedAt: '2025-07-15 13:11:42' },
+        { pair: 'BTC/USDT', userId: '10008', account: 'user_btc_008', side: '多仓', valueU: 86000, entryPrice: 66110, markPrice: 67480, upnl: 1780, leverage: 25, walletBalance: 9800, adl30dCount: 0, adl30dAmount: 0, updatedAt: '2025-07-15 12:06:08' },
+        { pair: 'ETH/USDT', userId: '20001', account: 'user_eth_001', side: '多仓', valueU: 42000, entryPrice: 3150, markPrice: 3288, upnl: 1680, leverage: 15, walletBalance: 9200, adl30dCount: 2, adl30dAmount: 15200, updatedAt: '2025-07-15 10:12:09' },
+        { pair: 'BNB/USDT', userId: '30001', account: 'user_bnb_001', side: '空仓', valueU: 28000, entryPrice: 590, markPrice: 575, upnl: 720, leverage: 8, walletBalance: 7800, adl30dCount: 2, adl30dAmount: 8300, updatedAt: '2025-07-14 18:26:10' },
+        { pair: 'SOL/USDT', userId: '60001', account: 'user_sol_001', side: '多仓', valueU: 19000, entryPrice: 148, markPrice: 152, upnl: 480, leverage: 12, walletBalance: 4100, adl30dCount: 0, adl30dAmount: 0, updatedAt: '2025-07-15 09:01:30' },
+        { pair: 'DOGE/USDT', userId: '40001', account: 'user_doge_001', side: '多仓', valueU: 15000, entryPrice: 0.165, markPrice: 0.171, upnl: 540, leverage: 20, walletBalance: 3400, adl30dCount: 1, adl30dAmount: 4200, updatedAt: '2025-07-15 08:18:00' },
+        { pair: 'TON/USDT', userId: '50001', account: 'user_ton_001', side: '多仓', valueU: 23000, entryPrice: 7.12, markPrice: 7.55, upnl: 1380, leverage: 10, walletBalance: 6200, adl30dCount: 1, adl30dAmount: 6800, updatedAt: '2025-07-15 11:42:20' },
+        { pair: 'BTC/USDT', userId: '10009', account: 'user_btc_009', side: '多仓', valueU: 46000, entryPrice: 66830, markPrice: 67480, upnl: 450, leverage: 5, walletBalance: 11600, adl30dCount: 0, adl30dAmount: 0, updatedAt: '2025-07-15 15:01:14' },
+        { pair: 'ETH/USDT', userId: '20008', account: 'user_eth_008', side: '空仓', valueU: 26000, entryPrice: 3320, markPrice: 3288, upnl: 250, leverage: 6, walletBalance: 5800, adl30dCount: 0, adl30dAmount: 0, updatedAt: '2025-07-15 10:44:51' }
+      ];
+
+      function fmtNum(value) {
+        const num = Number(value);
+        if (!Number.isFinite(num)) return String(value);
+        const fixed = num.toFixed(8);
+        return fixed.replace(/\.?0+$/, '');
+      }
+
+      function fmtSigned(value) {
+        const num = Number(value) || 0;
+        return (num >= 0 ? '+' : '') + fmtNum(num);
+      }
+
+      function getAdlUserKey(item) {
+        return item.pair + '|' + item.userId;
+      }
+
+      function calcProfitPercent(item) {
+        const nominal = Math.abs(Number(item.nominalPosition) || 0);
+        if (nominal <= 0) return 0;
+        return (Number(item.unrealizedPnl) || 0) / nominal;
+      }
+
+      function calcEffectiveLeverage(item) {
+        const nominal = Math.abs(Number(item.nominalPosition) || 0);
+        const equity = (Number(item.walletBalance) || 0) + (Number(item.unrealizedPnl) || 0);
+        if (nominal <= 0) return 0;
+        return nominal / Math.max(1, equity);
+      }
+
+      function calcBaseRanking(item) {
+        const profitPercent = calcProfitPercent(item);
+        const leverage = calcEffectiveLeverage(item);
+        if (profitPercent >= 0) return profitPercent * leverage;
+        return leverage > 0 ? (profitPercent / leverage) : profitPercent;
+      }
+
+      function buildAdlRankingMap() {
+        const total = Math.max(1, adlUsers.length);
+        const rows = adlUsers.map(function (item) {
+          return {
+            key: getAdlUserKey(item),
+            baseRank: calcBaseRanking(item),
+            adl30dCount: Number(item.adl30dCount) || 0,
+            adl30dAmount: Math.abs(Number(item.adl30dAmount) || 0)
+          };
+        });
+        const map = {};
+
+        rows.forEach(function (item) {
+          map[item.key] = {
+            baseRank: item.baseRank,
+            leveragePnlQuantile: 0,
+            countPenaltyQuantile: 0,
+            amountPenaltyQuantile: 0,
+            fairnessFactor: 1,
+            compositeRank: item.baseRank
+          };
+        });
+
+        rows.slice().sort(function (a, b) {
+          if (b.baseRank !== a.baseRank) return b.baseRank - a.baseRank;
+          return b.key.localeCompare(a.key, 'zh-CN');
+        }).forEach(function (item, index) {
+          map[item.key].leveragePnlQuantile = (index + 1) / total;
+        });
+
+        rows.slice().sort(function (a, b) {
+          if (b.adl30dCount !== a.adl30dCount) return b.adl30dCount - a.adl30dCount;
+          if (b.adl30dAmount !== a.adl30dAmount) return b.adl30dAmount - a.adl30dAmount;
+          return b.key.localeCompare(a.key, 'zh-CN');
+        }).forEach(function (item, index) {
+          map[item.key].countPenaltyQuantile = (total - index) / total;
+        });
+
+        rows.slice().sort(function (a, b) {
+          if (b.adl30dAmount !== a.adl30dAmount) return b.adl30dAmount - a.adl30dAmount;
+          if (b.adl30dCount !== a.adl30dCount) return b.adl30dCount - a.adl30dCount;
+          return b.key.localeCompare(a.key, 'zh-CN');
+        }).forEach(function (item, index) {
+          map[item.key].amountPenaltyQuantile = (total - index) / total;
+        });
+
+        Object.keys(map).forEach(function (key) {
+          const current = map[key];
+          current.fairnessFactor = 1 + 0.35 * current.countPenaltyQuantile + 0.15 * current.amountPenaltyQuantile;
+          current.compositeRank = current.baseRank >= 0
+            ? current.baseRank / current.fairnessFactor
+            : current.baseRank * current.fairnessFactor;
+        });
+
+        return map;
+      }
+
+      function buildPairPositionRankingMap() {
+        const total = Math.max(1, pairPositions.length);
+        const rows = pairPositions.map(function (item) {
+          const walletBalance = Number(item.walletBalance) || Math.max(1, (Number(item.valueU) || 0) / Math.max(1, Number(item.leverage) || 1));
+          return {
+            key: item.pair + '|' + item.userId,
+            baseRank: calcBaseRanking({
+              nominalPosition: item.valueU,
+              unrealizedPnl: item.upnl,
+              walletBalance: walletBalance
+            }),
+            adl30dCount: Number(item.adl30dCount) || 0,
+            adl30dAmount: Math.abs(Number(item.adl30dAmount) || 0)
+          };
+        });
+        const map = {};
+
+        rows.forEach(function (item) {
+          map[item.key] = {
+            baseRank: item.baseRank,
+            fairnessFactor: 1,
+            compositeRank: item.baseRank
+          };
+        });
+
+        rows.slice().sort(function (a, b) {
+          if (b.adl30dCount !== a.adl30dCount) return b.adl30dCount - a.adl30dCount;
+          if (b.adl30dAmount !== a.adl30dAmount) return b.adl30dAmount - a.adl30dAmount;
+          return b.key.localeCompare(a.key, 'zh-CN');
+        }).forEach(function (item, index) {
+          map[item.key].countPenaltyQuantile = (total - index) / total;
+        });
+
+        rows.slice().sort(function (a, b) {
+          if (b.adl30dAmount !== a.adl30dAmount) return b.adl30dAmount - a.adl30dAmount;
+          if (b.adl30dCount !== a.adl30dCount) return b.adl30dCount - a.adl30dCount;
+          return b.key.localeCompare(a.key, 'zh-CN');
+        }).forEach(function (item, index) {
+          map[item.key].amountPenaltyQuantile = (total - index) / total;
+        });
+
+        Object.keys(map).forEach(function (key) {
+          const current = map[key];
+          const countPenaltyQuantile = current.countPenaltyQuantile || 0;
+          const amountPenaltyQuantile = current.amountPenaltyQuantile || 0;
+          current.fairnessFactor = 1 + 0.35 * countPenaltyQuantile + 0.15 * amountPenaltyQuantile;
+          current.compositeRank = current.baseRank >= 0
+            ? current.baseRank / current.fairnessFactor
+            : current.baseRank * current.fairnessFactor;
+        });
+
+        return map;
+      }
+
+      function getRankingDetail(item, rankingMap, mode) {
+        const key = mode === 'adl' ? getAdlUserKey(item) : (item.pair + '|' + item.userId);
+        const nominal = Math.abs(Number(mode === 'adl' ? item.nominalPosition : item.valueU) || 0);
+        const unrealized = Number(mode === 'adl' ? item.unrealizedPnl : item.upnl) || 0;
+        const walletBalance = Number(item.walletBalance) || (nominal / Math.max(1, Number(item.leverage) || 1));
+        const profitPercent = calcProfitPercent({
+          nominalPosition: nominal,
+          unrealizedPnl: unrealized
+        });
+        const effectiveLeverage = calcEffectiveLeverage({
+          nominalPosition: nominal,
+          unrealizedPnl: unrealized,
+          walletBalance: walletBalance
+        });
+        const ranking = rankingMap[key] || {};
+        const baseRank = ranking.baseRank || calcBaseRanking({
+          nominalPosition: nominal,
+          unrealizedPnl: unrealized,
+          walletBalance: walletBalance
+        });
+        const count = Number(item.adl30dCount) || 0;
+        const amount = Number(item.adl30dAmount) || 0;
+        return {
+          key: key,
+          title: item.pair + ' / ' + item.userId,
+          nominal: nominal,
+          unrealized: unrealized,
+          walletBalance: walletBalance,
+          profitPercent: profitPercent,
+          effectiveLeverage: effectiveLeverage,
+          baseRank: baseRank,
+          adl30dCount: count,
+          adl30dAmount: amount,
+          countPenaltyQuantile: ranking.countPenaltyQuantile || 0,
+          amountPenaltyQuantile: ranking.amountPenaltyQuantile || 0,
+          fairnessFactor: ranking.fairnessFactor || 1,
+          compositeRank: ranking.compositeRank || baseRank
+        };
+      }
+
+      function openScoreDetail(detail) {
+        sdmTitle.textContent = '分数计算详情 - ' + detail.title;
+        sdmGrid.innerHTML = [
+          { k: '名目仓位', v: fmtNum(detail.nominal) + ' USDT' },
+          { k: '未实现收益', v: fmtSigned(detail.unrealized) + ' USDT' },
+          { k: '钱包余额', v: fmtNum(detail.walletBalance) + ' USDT' },
+          { k: '盈亏百分比', v: fmtNum(detail.profitPercent) },
+          { k: '有效杠杆', v: fmtNum(detail.effectiveLeverage) },
+          { k: '基础排序值', v: fmtNum(detail.baseRank) },
+          { k: '30天ADL减仓次数', v: String(detail.adl30dCount) },
+          { k: '30天ADL减仓金额', v: fmtNum(detail.adl30dAmount) + ' USDT' },
+          { k: '次数惩罚分位值', v: fmtNum(detail.countPenaltyQuantile) },
+          { k: '金额惩罚分位值', v: fmtNum(detail.amountPenaltyQuantile) },
+          { k: '公平调节系数', v: fmtNum(detail.fairnessFactor) },
+          { k: '综合排序值', v: fmtNum(detail.compositeRank) }
+        ].map(function (item) {
+          return '<div class="kpi"><small>' + item.k + '</small><strong>' + item.v + '</strong></div>';
+        }).join('');
+        sdmFormula.textContent =
+          '盈亏百分比 = ' + fmtSigned(detail.unrealized) + ' / ' + fmtNum(detail.nominal) + ' = ' + fmtNum(detail.profitPercent) + '\n' +
+          '有效杠杆 = ' + fmtNum(detail.nominal) + ' / (' + fmtNum(detail.walletBalance) + ' + ' + fmtSigned(detail.unrealized) + ') = ' + fmtNum(detail.effectiveLeverage) + '\n' +
+          (detail.profitPercent >= 0
+            ? '基础排序值 = 盈亏百分比 × 有效杠杆 = ' + fmtNum(detail.profitPercent) + ' × ' + fmtNum(detail.effectiveLeverage) + ' = ' + fmtNum(detail.baseRank)
+            : '基础排序值 = 盈亏百分比 ÷ 有效杠杆 = ' + fmtNum(detail.profitPercent) + ' ÷ ' + fmtNum(detail.effectiveLeverage) + ' = ' + fmtNum(detail.baseRank)) + '\n' +
+          '公平调节系数 = 1 + 0.35 × ' + fmtNum(detail.countPenaltyQuantile) + ' + 0.15 × ' + fmtNum(detail.amountPenaltyQuantile) + ' = ' + fmtNum(detail.fairnessFactor) + '\n' +
+          (detail.baseRank >= 0
+            ? '综合排序值 = 基础排序值 ÷ 公平调节系数 = ' + fmtNum(detail.baseRank) + ' ÷ ' + fmtNum(detail.fairnessFactor) + ' = ' + fmtNum(detail.compositeRank)
+            : '综合排序值 = 基础排序值 × 公平调节系数 = ' + fmtNum(detail.baseRank) + ' × ' + fmtNum(detail.fairnessFactor) + ' = ' + fmtNum(detail.compositeRank));
+        scoreDetailModal.classList.add('active');
+      }
+
+      function closeScoreDetail() {
+        scoreDetailModal.classList.remove('active');
+      }
+
+      function nowStr() {
+        const d = new Date();
+        const pad = function (n) { return String(n).padStart(2, '0'); };
+        return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+      }
+
+      function sum(list, field) {
+        return list.reduce(function (acc, item) {
+          const v = Number(item[field]);
+          return acc + (Number.isFinite(v) ? v : 0);
+        }, 0);
+      }
+
+      function setSpecCollapsed(collapsed) {
+        specSidebar.classList.toggle('collapsed', collapsed);
+        specToggle.textContent = collapsed ? '展开口径定义文档' : '收回口径';
+      }
+
+      function activate(pageId) {
+        navButtons.forEach(function (btn) { btn.classList.toggle('active', btn.dataset.page === pageId); });
+        pages.forEach(function (page) { page.classList.toggle('active', page.id === pageId); });
+        specPages.forEach(function (page) { page.classList.toggle('active', page.dataset.specPage === pageId); });
+        if (pageId === 'pair-config') overviewTitle.textContent = 'ADL（自动减仓）币对配置';
+        if (pageId === 'config-editor') overviewTitle.textContent = 'ADL减仓配置编辑';
+        if (pageId === 'pair-users') overviewTitle.textContent = '币对持仓用户列表';
+        if (pageId === 'adl-list') overviewTitle.textContent = 'ADL减仓列表';
+        if (pageId === 'adl-detail') overviewTitle.textContent = 'ADL减仓详情';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      function getOverviewMetrics() {
+        const cfgList = pairConfigs;
+        const warnCount = cfgList.filter(function (c) { return c.status === 'warn'; }).length;
+        const todayCount = sum(cfgList, 'adlCount');
+        const pnlTotal = sum(cfgList, 'pnl');
+        return [
+          { title: '监控币对总数', value: String(cfgList.length), hint: '按币对配置条目统计' },
+          { title: '风险预警币对', value: String(warnCount), hint: '状态为风险预警的币对数' },
+          { title: '今日ADL减仓次数', value: String(todayCount), hint: '按币对汇总展示' },
+          { title: 'ADL盈利总盈亏', value: (pnlTotal >= 0 ? '+' : '') + fmtNum(pnlTotal) + ' USDT', hint: '累计已实现盈亏（演示）', className: pnlTotal >= 0 ? 'text-ok' : 'text-danger' }
+        ];
+      }
+
+      function renderOverview() {
+        const metrics = getOverviewMetrics();
+        overviewGrid.innerHTML = metrics.map(function (m) {
+          return (
+            '<div class="overview-card">' +
+              '<small>' + m.title + '</small>' +
+              '<strong class="' + (m.className || '') + '">' + m.value + '</strong>' +
+              '<span>' + (m.hint || '') + '</span>' +
+            '</div>'
+          );
+        }).join('');
+      }
+
+      function getPairConfigFiltered() {
+        const key = (pcFilterKey.value || '').trim().toLowerCase();
+        const st = pcFilterStatus.value;
+        return pairConfigs.filter(function (item) {
+          const keyOk = !key || item.pair.toLowerCase().includes(key);
+          const stOk = !st || item.status === st;
+          return keyOk && stOk;
+        });
+      }
+
+      function renderPairConfig() {
+        const list = getPairConfigFiltered();
+        const totalPages = Math.max(1, Math.ceil(list.length / pageSize));
+        if (state.pcPage > totalPages) state.pcPage = totalPages;
+        const start = (state.pcPage - 1) * pageSize;
+        const pageList = list.slice(start, start + pageSize);
+
+        pcSummary.textContent = '当前展示 ' + list.length + ' 条币对配置';
+        pcPage.textContent = '第 ' + state.pcPage + ' 页 / 共 ' + totalPages + ' 页';
+        pcPrev.disabled = state.pcPage === 1;
+        pcNext.disabled = state.pcPage === totalPages;
+
+        pcTbody.innerHTML = pageList.map(function (row) {
+          const statusTag = row.status === 'warn'
+            ? '<button type="button" class="score-link pc-status" data-pair="' + row.pair + '">风险预警</button>'
+            : '<span class="tag ok">正常</span>';
+          const pnl = Number(row.pnl) || 0;
+          const pnlText = (pnl >= 0 ? '+' : '') + fmtNum(pnl);
+          const pnlClass = pnl >= 0 ? 'text-ok' : 'text-danger';
+          return (
+            '<tr>' +
+              '<td>' + row.pair + '</td>' +
+              '<td>' + fmtNum(row.maxLongLoss) + '</td>' +
+              '<td class="text-danger">' + fmtNum(row.futureLoss) + '</td>' +
+              '<td>' + String(row.adlCount) + '</td>' +
+              '<td class="' + pnlClass + '">' + pnlText + '</td>' +
+              '<td>' + statusTag + '</td>' +
+              '<td>' +
+                '<div class="button-group">' +
+                  '<button type="button" class="button secondary pc-edit" data-pair="' + row.pair + '">编辑</button>' +
+                  '<button type="button" class="button secondary pc-users" data-pair="' + row.pair + '">币对持仓用户</button>' +
+                  '<button type="button" class="button pc-view" data-pair="' + row.pair + '">减仓详情</button>' +
+                '</div>' +
+              '</td>' +
+            '</tr>'
+          );
+        }).join('');
+
+        Array.from(document.querySelectorAll('.pc-edit')).forEach(function (btn) {
+          btn.addEventListener('click', function () { openConfigModal(btn.dataset.pair); });
+        });
+        Array.from(document.querySelectorAll('.pc-status')).forEach(function (btn) {
+          btn.addEventListener('click', function () { openStatusResult(btn.dataset.pair); });
+        });
+        Array.from(document.querySelectorAll('.pc-view')).forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            state.activePair = btn.dataset.pair;
+            alFilterPair.value = state.activePair;
+            state.alPage = 1;
+            renderAdlList();
+            activate('adl-list');
+          });
+        });
+
+        Array.from(document.querySelectorAll('.pc-users')).forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            state.activePair = btn.dataset.pair;
+            puFilterPair.value = state.activePair;
+            state.puPage = 1;
+            renderPairUsers();
+            activate('pair-users');
+          });
+        });
+      }
+
+      function renderPairSelect(selectEl, includeAll) {
+        const options = (includeAll ? ['全部'] : []).concat(pairUniverse);
+        selectEl.innerHTML = options.map(function (p) {
+          if (p === '全部') return '<option value="">全部</option>';
+          return '<option value="' + p + '">' + p + '</option>';
+        }).join('');
+      }
+
+      function getPairUsersFiltered() {
+        const pair = puFilterPair.value;
+        const uid = (puFilterUser.value || '').trim();
+        const acc = (puFilterAccount.value || '').trim().toLowerCase();
+        const rankingMap = buildPairPositionRankingMap();
+        return pairPositions.filter(function (item) {
+          const pairOk = !pair || item.pair === pair;
+          const uidOk = !uid || String(item.userId).includes(uid);
+          const accOk = !acc || String(item.account).toLowerCase().includes(acc);
+          return pairOk && uidOk && accOk;
+        }).sort(function (a, b) {
+          const rankDiff = (rankingMap[b.pair + '|' + b.userId].compositeRank || 0) - (rankingMap[a.pair + '|' + a.userId].compositeRank || 0);
+          if (rankDiff !== 0) return rankDiff;
+          const t = new Date(b.updatedAt.replace(' ', 'T')) - new Date(a.updatedAt.replace(' ', 'T'));
+          if (t !== 0) return t;
+          return String(b.userId).localeCompare(String(a.userId), 'zh-CN');
+        });
+      }
+
+      function renderPairUsers() {
+        const list = getPairUsersFiltered();
+        const rankingMap = buildPairPositionRankingMap();
+        const totalPages = Math.max(1, Math.ceil(list.length / pageSize));
+        if (state.puPage > totalPages) state.puPage = totalPages;
+        const start = (state.puPage - 1) * pageSize;
+        const pageList = list.slice(start, start + pageSize);
+
+        puSummary.textContent = '当前展示 ' + list.length + ' 条持仓用户';
+        puPage.textContent = '第 ' + state.puPage + ' 页 / 共 ' + totalPages + ' 页';
+        puPrev.disabled = state.puPage === 1;
+        puNext.disabled = state.puPage === totalPages;
+
+        puTbody.innerHTML = pageList.map(function (row) {
+          const upnl = Number(row.upnl) || 0;
+          const upnlText = (upnl >= 0 ? '+' : '') + fmtNum(upnl);
+          const upnlClass = upnl >= 0 ? 'text-ok' : 'text-danger';
+          const key = row.pair + '|' + row.userId;
+          const ranking = rankingMap[key] || { compositeRank: 0 };
+          return (
+            '<tr>' +
+              '<td>' + row.pair + '</td>' +
+              '<td>' + row.userId + '</td>' +
+              '<td>' + row.account + '</td>' +
+              '<td>' + row.side + '</td>' +
+              '<td>' + fmtNum(row.valueU) + '</td>' +
+              '<td>' + fmtNum(row.entryPrice) + '</td>' +
+              '<td>' + fmtNum(row.markPrice) + '</td>' +
+              '<td class="' + upnlClass + '">' + upnlText + '</td>' +
+              '<td>' + String(row.leverage) + 'x</td>' +
+              '<td><button type="button" class="score-link pu-score" data-key="' + key + '">' + fmtNum(ranking.compositeRank) + '</button></td>' +
+              '<td>' + row.updatedAt + '</td>' +
+              '<td>' +
+                '<div class="button-group">' +
+                  '<button type="button" class="button pu-manual" data-key="' + key + '">手动ADL减仓</button>' +
+                  '<button type="button" class="button secondary pu-detail" data-key="' + key + '">减仓详情</button>' +
+                '</div>' +
+              '</td>' +
+            '</tr>'
+          );
+        }).join('');
+
+        Array.from(document.querySelectorAll('.pu-manual')).forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            openManualAdlModal(btn.dataset.key);
+          });
+        });
+        Array.from(document.querySelectorAll('.pu-score')).forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            const position = getPositionByKey(btn.dataset.key);
+            if (!position) return;
+            openScoreDetail(getRankingDetail(position, rankingMap, 'position'));
+          });
+        });
+        Array.from(document.querySelectorAll('.pu-detail')).forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            openDetail(btn.dataset.key, 'orders');
+          });
+        });
+      }
+
+      function getAdlListFiltered() {
+        const pair = alFilterPair.value;
+        const uid = (alFilterUser.value || '').trim();
+        const rankingMap = buildAdlRankingMap();
+        return adlUsers.filter(function (item) {
+          const pairOk = !pair || item.pair === pair;
+          const uidOk = !uid || item.userId.includes(uid);
+          return pairOk && uidOk;
+        }).sort(function (a, b) {
+          const rankDiff = (rankingMap[getAdlUserKey(b)].compositeRank || 0) - (rankingMap[getAdlUserKey(a)].compositeRank || 0);
+          if (rankDiff !== 0) return rankDiff;
+          const t = new Date(b.lastAt.replace(' ', 'T')) - new Date(a.lastAt.replace(' ', 'T'));
+          if (t !== 0) return t;
+          return b.userId.localeCompare(a.userId, 'zh-CN');
+        });
+      }
+
+      function renderAdlList() {
+        const list = getAdlListFiltered();
+        const rankingMap = buildAdlRankingMap();
+        const totalPages = Math.max(1, Math.ceil(list.length / pageSize));
+        if (state.alPage > totalPages) state.alPage = totalPages;
+        const start = (state.alPage - 1) * pageSize;
+        const pageList = list.slice(start, start + pageSize);
+
+        alSummary.textContent = '当前展示 ' + list.length + ' 条减仓记录';
+        alPage.textContent = '第 ' + state.alPage + ' 页 / 共 ' + totalPages + ' 页';
+        alPrev.disabled = state.alPage === 1;
+        alNext.disabled = state.alPage === totalPages;
+
+        alTbody.innerHTML = pageList.map(function (row) {
+          const pnl = Number(row.realizedPnl) || 0;
+          const pnlText = (pnl >= 0 ? '+' : '') + fmtNum(pnl);
+          const pnlClass = pnl >= 0 ? 'text-ok' : 'text-danger';
+          const key = row.pair + '|' + row.userId;
+          const ranking = rankingMap[key] || { compositeRank: 0 };
+          return (
+            '<tr>' +
+              '<td>' + row.pair + '</td>' +
+              '<td>' + row.userId + '</td>' +
+              '<td>' + row.account + '</td>' +
+              '<td>' + String(row.profitThreshold) + '</td>' +
+              '<td>' + String(row.reduceRatio) + '</td>' +
+              '<td>' + String(row.reduceTimes) + '</td>' +
+              '<td>' + String(row.adl30dCount || 0) + '</td>' +
+              '<td>' + fmtNum(row.adl30dAmount || 0) + '</td>' +
+              '<td class="' + pnlClass + '">' + pnlText + '</td>' +
+              '<td>' + row.lastAt + '<br /><button type="button" class="score-link al-score" data-key="' + key + '" style="margin-top:6px;">综合排序值 ' + fmtNum(ranking.compositeRank) + '</button></td>' +
+              '<td>' +
+                '<div class="button-group">' +
+                  '<button type="button" class="button secondary al-orders" data-key="' + key + '">订单记录</button>' +
+                  '<button type="button" class="button secondary al-fills" data-key="' + key + '">成交记录</button>' +
+                '</div>' +
+              '</td>' +
+            '</tr>'
+          );
+        }).join('');
+
+        Array.from(document.querySelectorAll('.al-orders')).forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            openDetail(btn.dataset.key, 'orders');
+          });
+        });
+        Array.from(document.querySelectorAll('.al-score')).forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            const row = getUserRowByKey(btn.dataset.key);
+            if (!row) return;
+            openScoreDetail(getRankingDetail(row, rankingMap, 'adl'));
+          });
+        });
+        Array.from(document.querySelectorAll('.al-fills')).forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            openDetail(btn.dataset.key, 'fills');
+          });
+        });
+      }
+
+      function getUserRowByKey(key) {
+        return adlUsers.find(function (u) { return u.pair + '|' + u.userId === key; });
+      }
+
+      function renderDetailKpis(row) {
+        if (!row) {
+          detailKpis.innerHTML = '';
+          return;
+        }
+        const pnl = Number(row.realizedPnl) || 0;
+        const pnlText = (pnl >= 0 ? '+' : '') + fmtNum(pnl) + ' USDT';
+        const pnlClass = pnl >= 0 ? 'text-ok' : 'text-danger';
+        const items = [
+          { k: '交易对', v: row.pair },
+          { k: '用户ID', v: row.userId },
+          { k: '用户账号', v: row.account },
+          { k: '盈利阈值(%)', v: String(row.profitThreshold) },
+          { k: '减仓比例(%)', v: String(row.reduceRatio) },
+          { k: '减仓次数', v: String(row.reduceTimes) },
+          { k: '减仓已实现盈亏(USDT)', v: pnlText, cls: pnlClass },
+          { k: '最新减仓时间', v: row.lastAt }
+        ];
+        detailKpis.innerHTML = items.map(function (it) {
+          return (
+            '<div class="detail-item">' +
+              '<small>' + it.k + '</small>' +
+              '<strong class="' + (it.cls || '') + '">' + it.v + '</strong>' +
+            '</div>'
+          );
+        }).join('');
+      }
+
+      function setActiveTab(tabKey) {
+        state.adTab = tabKey;
+        tabs.forEach(function (t) { t.classList.toggle('active', t.dataset.tab === tabKey); });
+        state.adPage = 1;
+        renderDetailTable();
+      }
+
+      function getDateFilterOk(atText) {
+        const d = new Date(atText.replace(' ', 'T'));
+        if (!adDateStart.value && !adDateEnd.value) return true;
+        const startOk = !adDateStart.value || d >= new Date(adDateStart.value + 'T00:00:00');
+        const endOk = !adDateEnd.value || d <= new Date(adDateEnd.value + 'T23:59:59');
+        return startOk && endOk;
+      }
+
+      function getDetailList() {
+        const key = state.activeUserKey;
+        const tab = state.adTab;
+        const raw = tab === 'orders' ? (orderRecords[key] || []) : (fillRecords[key] || []);
+        return raw.filter(function (row) {
+          const atText = tab === 'orders' ? row.at : row.at;
+          return getDateFilterOk(atText);
+        }).sort(function (a, b) {
+          const ta = new Date((tab === 'orders' ? a.at : a.at).replace(' ', 'T'));
+          const tb = new Date((tab === 'orders' ? b.at : b.at).replace(' ', 'T'));
+          return tb - ta;
+        });
+      }
+
+      function renderDetailTableHead() {
+        if (state.adTab === 'orders') {
+          adThead.innerHTML =
+            '<tr>' +
+              '<th>减仓时间</th>' +
+              '<th>开仓方向</th>' +
+              '<th>减仓数量(USDT)</th>' +
+              '<th>减仓时实时价格</th>' +
+              '<th>订单成交均价</th>' +
+              '<th>减仓盈亏(USDT)</th>' +
+              '<th>减仓后盈利率(%)</th>' +
+              '<th>订单状态</th>' +
+            '</tr>';
+          return;
+        }
+        adThead.innerHTML =
+          '<tr>' +
+            '<th>成交ID</th>' +
+            '<th>订单ID</th>' +
+            '<th>交易对</th>' +
+            '<th>成交时间</th>' +
+            '<th>成交数量(USDT)</th>' +
+            '<th>成交价格</th>' +
+            '<th>成交金额(USDT)</th>' +
+            '<th>手续费(USDT)</th>' +
+            '<th>成交盈亏(USDT)</th>' +
+          '</tr>';
+      }
+
+      function renderDetailTable() {
+        renderDetailTableHead();
+        const list = getDetailList();
+        const totalPages = Math.max(1, Math.ceil(list.length / pageSize));
+        if (state.adPage > totalPages) state.adPage = totalPages;
+        const start = (state.adPage - 1) * pageSize;
+        const pageList = list.slice(start, start + pageSize);
+
+        adSummary.textContent = '当前展示 ' + list.length + ' 条' + (state.adTab === 'orders' ? '订单记录' : '成交记录');
+        adPage.textContent = '第 ' + state.adPage + ' 页 / 共 ' + totalPages + ' 页';
+        adPrev.disabled = state.adPage === 1;
+        adNext.disabled = state.adPage === totalPages;
+
+        if (state.adTab === 'orders') {
+          adTbody.innerHTML = pageList.map(function (row) {
+            const pnlText = (Number(row.pnl) >= 0 ? '+' : '') + fmtNum(row.pnl);
+            return (
+              '<tr>' +
+                '<td>' + row.at + '</td>' +
+                '<td>' + row.side + '</td>' +
+                '<td>' + fmtNum(row.qty) + '</td>' +
+                '<td>' + fmtNum(row.markPrice) + '</td>' +
+                '<td>' + fmtNum(row.avgPrice) + '</td>' +
+                '<td class="text-ok">' + pnlText + '</td>' +
+                '<td>' + String(row.afterProfitRate) + '</td>' +
+                '<td><span class="tag ok">' + row.status + '</span></td>' +
+              '</tr>'
+            );
+          }).join('');
+          return;
+        }
+
+        adTbody.innerHTML = pageList.map(function (row) {
+          const pnl = Number(row.pnl) || 0;
+          const pnlText = (pnl >= 0 ? '+' : '') + fmtNum(pnl);
+          return (
+            '<tr>' +
+              '<td>' + row.fillId + '</td>' +
+              '<td>' + row.orderId + '</td>' +
+              '<td>' + row.pair + '</td>' +
+              '<td>' + row.at + '</td>' +
+              '<td>' + fmtNum(row.qty) + '</td>' +
+              '<td>' + fmtNum(row.price) + '</td>' +
+              '<td>' + fmtNum(row.amount) + '</td>' +
+              '<td>' + fmtNum(row.fee) + '</td>' +
+              '<td class="text-ok">' + pnlText + '</td>' +
+            '</tr>'
+          );
+        }).join('');
+      }
+
+      function openDetail(key, tab) {
+        state.activeUserKey = key;
+        const row = getUserRowByKey(key);
+        renderDetailKpis(row);
+        setActiveTab(tab);
+        activate('adl-detail');
+      }
+
+      function calcRiskRate(maxLoss, futureLoss) {
+        const ml = Number(maxLoss);
+        const fl = Math.abs(Number(futureLoss));
+        if (!Number.isFinite(ml) || ml <= 0 || !Number.isFinite(fl)) return '--';
+        const rate = Math.min(99.99, Math.max(0, (fl / ml) * 100));
+        return fmtNum(rate) + '%';
+      }
+
+      function calcEstProfit(pnl, rate) {
+        const base = Number(pnl) || 0;
+        const r = Number(rate) || 0;
+        const est = Math.max(0, base * (0.35 + (r / 200)));
+        return '+' + fmtNum(est) + ' USDT';
+      }
+
+      function openStatusResult(pair) {
+        const current = pairConfigs.find(function (c) { return c.pair === pair; });
+        if (!current) return;
+        const risk = calcRiskRate(current.maxLongLoss, current.futureLoss);
+        const futureLossAbs = Math.abs(Number(current.futureLoss) || 0);
+        const threshold = Math.max(1, Number(current.maxLongLoss) || 1);
+        const ratio = futureLossAbs / threshold;
+        const resultText = ratio >= 0.75 ? '风险预警' : '正常';
+        srmTitle.textContent = '风险预警结果 - ' + current.pair;
+        srmGrid.innerHTML = [
+          { k: '币对', v: current.pair },
+          { k: '最多多方向可亏损额', v: fmtNum(current.maxLongLoss) + ' USDT' },
+          { k: '用户未来累计亏损额', v: fmtNum(current.futureLoss) + ' USDT' },
+          { k: '风险比率', v: risk },
+          { k: '当前状态', v: resultText },
+          { k: '30天已ADL次数', v: String(current.adlCount) }
+        ].map(function (item) {
+          return '<div class="kpi"><small>' + item.k + '</small><strong>' + item.v + '</strong></div>';
+        }).join('');
+        srmFormula.textContent =
+          '风险比率 = 绝对值(用户未来累计亏损额) ÷ 最多多方向可亏损额\n' +
+          '风险比率 = ' + fmtNum(futureLossAbs) + ' ÷ ' + fmtNum(threshold) + ' = ' + risk + '\n' +
+          '状态判定规则：当风险比率 ≥ 75% 时，状态为风险预警；当风险比率 < 75% 时，状态为正常。\n' +
+          '当前结果：' + resultText;
+        statusResultModal.classList.add('active');
+      }
+
+      function closeStatusResult() {
+        statusResultModal.classList.remove('active');
+      }
+
+      function getPositionByKey(key) {
+        return pairPositions.find(function (item) {
+          return item.pair + '|' + item.userId === key;
+        });
+      }
+
+      function calcBankruptcyPrice(position) {
+        if (!position) return 0;
+        const entry = Number(position.entryPrice) || 0;
+        const leverage = Math.max(1, Number(position.leverage) || 1);
+        if (position.side === '空仓') return entry * (1 + 1 / leverage);
+        return Math.max(0, entry * (1 - 1 / leverage));
+      }
+
+      function calcManualAfterPnl(position, bankruptcyPrice, closeQty) {
+        if (!position) return 0;
+        const entryPrice = Number(position.entryPrice) || 0;
+        const qty = Math.max(0, Number(closeQty) || 0);
+        const bankruptcy = Math.max(0, Number(bankruptcyPrice) || 0);
+        if (entryPrice <= 0 || qty <= 0 || bankruptcy <= 0) return 0;
+        const delta = position.side === '空仓'
+          ? (entryPrice - bankruptcy) / entryPrice
+          : (bankruptcy - entryPrice) / entryPrice;
+        return qty * delta;
+      }
+
+      function refreshManualAfterPnl() {
+        const position = getPositionByKey(state.activeManualKey);
+        const closePnl = calcManualAfterPnl(position, mamBankruptcy.value, mamCloseQty.value);
+        mamAfterPnl.value = fmtSigned(closePnl) + ' USDT';
+      }
+
+      function openManualAdlModal(key) {
+        const position = getPositionByKey(key);
+        if (!position) return;
+        state.activeManualKey = key;
+        mamTitle.textContent = '手动ADL减仓 - ' + position.pair + ' / ' + position.userId;
+        mamBankruptcy.value = fmtNum(calcBankruptcyPrice(position));
+        mamCurrentPrice.value = fmtNum(position.markPrice);
+        mamPositionQty.value = fmtNum(position.valueU);
+        mamPositionSide.value = position.side;
+        mamEntryPrice.value = fmtNum(position.entryPrice);
+        mamCloseQty.value = fmtNum(Math.min((Number(position.valueU) || 0) * 0.2, Number(position.valueU) || 0));
+        mamGoogleCode.value = '';
+        mamError.textContent = '';
+        refreshManualAfterPnl();
+        manualAdlModal.classList.add('active');
+      }
+
+      function closeManualAdlModal() {
+        manualAdlModal.classList.remove('active');
+        state.activeManualKey = '';
+      }
+
+      function saveManualAdl() {
+        const position = getPositionByKey(state.activeManualKey);
+        if (!position) return;
+        const bankruptcyPrice = Number(mamBankruptcy.value || 0);
+        const closeQty = Number(mamCloseQty.value || 0);
+        const totalQty = Number(position.valueU) || 0;
+        const beforePnl = Number(position.upnl) || 0;
+        const remainRatio = totalQty <= 0 ? 0 : Math.max(0, (totalQty - closeQty) / totalQty);
+        const remainPnl = beforePnl * remainRatio;
+        if (!Number.isFinite(closeQty) || closeQty <= 0) {
+          mamError.textContent = '请输入大于 0 的平仓数量。';
+          return;
+        }
+        if (!Number.isFinite(bankruptcyPrice) || bankruptcyPrice <= 0) {
+          mamError.textContent = '请输入大于 0 的破产价。';
+          return;
+        }
+        if (closeQty > totalQty) {
+          mamError.textContent = '平仓数量不能大于当前持仓数量。';
+          return;
+        }
+        if ((mamGoogleCode.value || '').trim() !== manualGoogleDemoCode) {
+          mamError.textContent = '谷歌验证码错误，请输入演示码 624981。';
+          return;
+        }
+
+        const realized = calcManualAfterPnl(position, bankruptcyPrice, closeQty);
+        const reduceRatio = totalQty <= 0 ? 0 : Math.round((closeQty / totalQty) * 100);
+        const riskRate = totalQty <= 0 ? 0 : Math.round((Math.abs(realized) / totalQty) * 100);
+        const doneAt = nowStr();
+        const key = position.pair + '|' + position.userId;
+
+        position.valueU = Math.max(0, totalQty - closeQty);
+        position.upnl = Number(remainPnl.toFixed(2));
+        position.updatedAt = doneAt;
+
+        const userRow = adlUsers.find(function (item) { return item.pair === position.pair && item.userId === position.userId; });
+        if (userRow) {
+          userRow.reduceTimes += 1;
+          userRow.reduceRatio = reduceRatio;
+          userRow.realizedPnl = Number((Number(userRow.realizedPnl || 0) + realized).toFixed(2));
+          userRow.nominalPosition = Number(position.valueU.toFixed(2));
+          userRow.unrealizedPnl = Number(position.upnl.toFixed(2));
+          userRow.walletBalance = Number((Number(userRow.walletBalance || 0) + realized).toFixed(2));
+          userRow.adl30dCount = (Number(userRow.adl30dCount) || 0) + 1;
+          userRow.adl30dAmount = Number(((Number(userRow.adl30dAmount) || 0) + Math.abs(realized)).toFixed(2));
+          userRow.lastAt = doneAt;
+          userRow.profitThreshold = Math.max(userRow.profitThreshold, riskRate);
+        } else {
+          adlUsers.unshift({
+            pair: position.pair,
+            userId: position.userId,
+            account: position.account,
+            profitThreshold: riskRate,
+            reduceRatio: reduceRatio,
+            reduceTimes: 1,
+            realizedPnl: Number(realized.toFixed(2)),
+            lastAt: doneAt,
+            walletBalance: Number(Math.max(1, (totalQty / Math.max(1, Number(position.leverage) || 1)) + realized).toFixed(2)),
+            nominalPosition: Number(position.valueU.toFixed(2)),
+            unrealizedPnl: Number(position.upnl.toFixed(2)),
+            adl30dCount: 1,
+            adl30dAmount: Number(Math.abs(realized).toFixed(2))
+          });
+        }
+
+        if (!orderRecords[key]) orderRecords[key] = [];
+        orderRecords[key].unshift({
+          at: doneAt,
+          side: position.side,
+          qty: Number(closeQty.toFixed(2)),
+          markPrice: Number(bankruptcyPrice.toFixed(2)),
+          avgPrice: Number(position.entryPrice),
+          pnl: Number(realized.toFixed(2)),
+          afterProfitRate: Math.max(0, Math.round((Math.max(0, position.upnl) / Math.max(1, position.valueU || 1)) * 100)),
+          status: '已完成'
+        });
+
+        if (!fillRecords[key]) fillRecords[key] = [];
+        fillRecords[key].unshift({
+          fillId: 'TRD' + doneAt.replace(/[-: ]/g, '') + String(position.userId).slice(-3),
+          orderId: 'ADL' + doneAt.replace(/[-: ]/g, '') + String(position.userId).slice(-3),
+          pair: position.pair,
+          at: doneAt,
+          qty: Number(closeQty.toFixed(2)),
+          price: Number(bankruptcyPrice.toFixed(2)),
+          amount: Number((closeQty * (Number(bankruptcyPrice) || 0)).toFixed(2)),
+          fee: 0,
+          pnl: Number(realized.toFixed(2))
+        });
+
+        const pairConfig = pairConfigs.find(function (item) { return item.pair === position.pair; });
+        if (pairConfig) {
+          pairConfig.adlCount += 1;
+          pairConfig.pnl = Number((Number(pairConfig.pnl || 0) + realized).toFixed(2));
+          pairConfig.status = 'warn';
+        }
+
+        mamError.textContent = '';
+        state.puPage = 1;
+        state.alPage = 1;
+        state.adPage = 1;
+        renderOverview();
+        renderPairConfig();
+        renderPairUsers();
+        renderAdlList();
+        openDetail(key, 'orders');
+        closeManualAdlModal();
+      }
+
+      function openConfigModal(pair) {
+        activeEditPair = pair || '';
+        cmTitle.textContent = activeEditPair ? 'ADL减仓配置' : '新增ADL减仓配置';
+        const current = pairConfigs.find(function (c) { return c.pair === pair; });
+        const initPair = current ? current.pair : (pairUniverse[0] || 'BTC/USDT');
+        const initMaxLoss = current ? current.maxLongLoss : 300000;
+        const initFutureLoss = current ? current.futureLoss : -100000;
+        const initLongBankruptcyOffset = current ? current.longBankruptcyOffset : 5;
+        const initShortBankruptcyOffset = current ? current.shortBankruptcyOffset : 5;
+        const initCycle = current ? current.cycle : 'day';
+        cmPair.value = initPair;
+        cmMaxLoss.value = String(initMaxLoss);
+        cmFutureLoss.value = String(initFutureLoss);
+        cmLongBankruptcyOffset.value = String(initLongBankruptcyOffset);
+        cmShortBankruptcyOffset.value = String(initShortBankruptcyOffset);
+        Array.from(cmCycleGroup.querySelectorAll('input[name="cm-cycle"]')).forEach(function (r) {
+          r.checked = r.value === initCycle;
+        });
+        const risk = calcRiskRate(initMaxLoss, initFutureLoss);
+        cmRiskRate.textContent = risk;
+        const rnum = Number(String(risk).replace('%', ''));
+        cmRiskRate.className = rnum >= 85 ? 'text-danger' : (rnum >= 65 ? 'text-warn' : 'text-ok');
+        const est = calcEstProfit((current ? current.pnl : 14800), rnum);
+        cmEstProfit.textContent = est;
+        activate('config-editor');
+      }
+
+      function closeConfigModal() {
+        activate('pair-config');
+      }
+
+      function getSelectedCycle() {
+        const node = cmCycleGroup.querySelector('input[name="cm-cycle"]:checked');
+        return node ? node.value : 'day';
+      }
+
+      function saveConfig() {
+        const pair = cmPair.value;
+        const maxLoss = Number(cmMaxLoss.value || 0);
+        const futureLoss = Number(cmFutureLoss.value || 0);
+        const longBankruptcyOffset = Number(cmLongBankruptcyOffset.value || 0);
+        const shortBankruptcyOffset = Number(cmShortBankruptcyOffset.value || 0);
+        if (!pair) return;
+        if (!Number.isFinite(maxLoss) || maxLoss <= 0) return;
+        if (!Number.isFinite(futureLoss)) return;
+        if (!Number.isFinite(longBankruptcyOffset) || longBankruptcyOffset < 0) return;
+        if (!Number.isFinite(shortBankruptcyOffset) || shortBankruptcyOffset < 0) return;
+        const cycle = getSelectedCycle();
+        const existing = pairConfigs.find(function (c) { return c.pair === pair; });
+        if (existing) {
+          existing.maxLongLoss = Math.round(maxLoss);
+          existing.futureLoss = Math.round(futureLoss);
+          existing.longBankruptcyOffset = Number(longBankruptcyOffset.toFixed(2));
+          existing.shortBankruptcyOffset = Number(shortBankruptcyOffset.toFixed(2));
+          existing.cycle = cycle;
+          existing.status = Math.abs(existing.futureLoss) / Math.max(1, existing.maxLongLoss) >= 0.75 ? 'warn' : 'ok';
+        } else {
+          pairConfigs.unshift({
+            pair: pair,
+            maxLongLoss: Math.round(maxLoss),
+            futureLoss: Math.round(futureLoss),
+            adlCount: 0,
+            pnl: 0,
+            status: Math.abs(futureLoss) / Math.max(1, maxLoss) >= 0.75 ? 'warn' : 'ok',
+            cycle: cycle,
+            longBankruptcyOffset: Number(longBankruptcyOffset.toFixed(2)),
+            shortBankruptcyOffset: Number(shortBankruptcyOffset.toFixed(2))
+          });
+        }
+        state.pcPage = 1;
+        renderOverview();
+        renderPairConfig();
+        closeConfigModal();
+      }
+
+      navButtons.forEach(function (btn) {
+        btn.addEventListener('click', function () { activate(btn.dataset.page); });
+      });
+      pills.forEach(function (p) {
+        p.addEventListener('click', function () {
+          pills.forEach(function (x) { x.classList.toggle('active', x === p); });
+          state.granularity = p.dataset.gran;
+          renderOverview();
+        });
+      });
+      specToggle.addEventListener('click', function () {
+        setSpecCollapsed(!specSidebar.classList.contains('collapsed'));
+      });
+
+      pcApply.addEventListener('click', function () { state.pcPage = 1; renderPairConfig(); });
+      pcReset.addEventListener('click', function () {
+        pcFilterKey.value = '';
+        pcFilterStatus.value = '';
+        state.pcPage = 1;
+        renderPairConfig();
+      });
+      pcPrev.addEventListener('click', function () { if (state.pcPage > 1) { state.pcPage -= 1; renderPairConfig(); } });
+      pcNext.addEventListener('click', function () {
+        const total = Math.max(1, Math.ceil(getPairConfigFiltered().length / pageSize));
+        if (state.pcPage < total) { state.pcPage += 1; renderPairConfig(); }
+      });
+      addConfigBtn.addEventListener('click', function () { openConfigModal(''); });
+
+      puBackConfig.addEventListener('click', function () { activate('pair-config'); });
+      puApply.addEventListener('click', function () { state.puPage = 1; renderPairUsers(); });
+      puReset.addEventListener('click', function () {
+        puFilterPair.value = '';
+        puFilterUser.value = '';
+        puFilterAccount.value = '';
+        state.puPage = 1;
+        renderPairUsers();
+      });
+      puPrev.addEventListener('click', function () { if (state.puPage > 1) { state.puPage -= 1; renderPairUsers(); } });
+      puNext.addEventListener('click', function () {
+        const total = Math.max(1, Math.ceil(getPairUsersFiltered().length / pageSize));
+        if (state.puPage < total) { state.puPage += 1; renderPairUsers(); }
+      });
+
+      alApply.addEventListener('click', function () { state.alPage = 1; renderAdlList(); });
+      alReset.addEventListener('click', function () {
+        alFilterPair.value = '';
+        alFilterUser.value = '';
+        state.alPage = 1;
+        renderAdlList();
+      });
+      alPrev.addEventListener('click', function () { if (state.alPage > 1) { state.alPage -= 1; renderAdlList(); } });
+      alNext.addEventListener('click', function () {
+        const total = Math.max(1, Math.ceil(getAdlListFiltered().length / pageSize));
+        if (state.alPage < total) { state.alPage += 1; renderAdlList(); }
+      });
+
+      backToList.addEventListener('click', function () { activate('adl-list'); });
+      tabs.forEach(function (t) {
+        t.addEventListener('click', function () { setActiveTab(t.dataset.tab); });
+      });
+      adApply.addEventListener('click', function () { state.adPage = 1; renderDetailTable(); });
+      adReset.addEventListener('click', function () { adDateStart.value = ''; adDateEnd.value = ''; state.adPage = 1; renderDetailTable(); });
+      adPrev.addEventListener('click', function () { if (state.adPage > 1) { state.adPage -= 1; renderDetailTable(); } });
+      adNext.addEventListener('click', function () {
+        const total = Math.max(1, Math.ceil(getDetailList().length / pageSize));
+        if (state.adPage < total) { state.adPage += 1; renderDetailTable(); }
+      });
+
+      cmClose.addEventListener('click', closeConfigModal);
+      cmReset.addEventListener('click', function () { openConfigModal(activeEditPair); });
+      cmSave.addEventListener('click', saveConfig);
+      cmPair.addEventListener('change', function () {
+        const pair = cmPair.value;
+        const current = pairConfigs.find(function (c) { return c.pair === pair; });
+        const maxLoss = current ? current.maxLongLoss : Number(cmMaxLoss.value || 300000);
+        const futureLoss = current ? current.futureLoss : Number(cmFutureLoss.value || -100000);
+        const risk = calcRiskRate(maxLoss, futureLoss);
+        cmRiskRate.textContent = risk;
+      });
+      cmMaxLoss.addEventListener('input', function () { cmRiskRate.textContent = calcRiskRate(cmMaxLoss.value, cmFutureLoss.value); });
+      cmFutureLoss.addEventListener('input', function () { cmRiskRate.textContent = calcRiskRate(cmMaxLoss.value, cmFutureLoss.value); });
+
+      mamClose.addEventListener('click', closeManualAdlModal);
+      mamCancel.addEventListener('click', closeManualAdlModal);
+      manualAdlModal.addEventListener('click', function (e) { if (e.target === manualAdlModal) closeManualAdlModal(); });
+      sdmClose.addEventListener('click', closeScoreDetail);
+      sdmCancel.addEventListener('click', closeScoreDetail);
+      scoreDetailModal.addEventListener('click', function (e) { if (e.target === scoreDetailModal) closeScoreDetail(); });
+      srmClose.addEventListener('click', closeStatusResult);
+      srmCancel.addEventListener('click', closeStatusResult);
+      statusResultModal.addEventListener('click', function (e) { if (e.target === statusResultModal) closeStatusResult(); });
+      mamGoogleFill.addEventListener('click', function () { mamGoogleCode.value = manualGoogleDemoCode; });
+      mamBankruptcy.addEventListener('input', refreshManualAfterPnl);
+      mamCloseQty.addEventListener('input', refreshManualAfterPnl);
+      mamConfirm.addEventListener('click', saveManualAdl);
+
+      renderPairSelect(alFilterPair, true);
+      renderPairSelect(puFilterPair, true);
+      renderPairSelect(cmPair, false);
+      renderOverview();
+      renderPairConfig();
+      renderPairUsers();
+      renderAdlList();
+      openDetail('BTC/USDT|10001', 'orders');
+      setSpecCollapsed(true);
+      activate('pair-config');
+    })();
+  </script>
+</body>
+</html>
