@@ -47,17 +47,26 @@
     }
 
     .app-shell{
-      width:min(1500px, calc(100vw - 40px));
+      width:min(1580px, calc(100vw - 40px));
       margin:20px auto;
       display:grid;
-      grid-template-columns:290px minmax(0,1fr);
+      grid-template-columns:clamp(272px, 22vw, 332px) minmax(0,1fr);
       gap:20px;
+      align-items:start;
+      transition:width .22s ease, margin .22s ease;
+    }
+    body.spec-open .app-shell{
+      width:min(1120px, calc(100vw - 500px));
+      margin-left:auto;
+      margin-right:calc(min(420px, calc(100vw - 40px)) + 28px);
     }
 
     .sidebar{
       position:sticky;
       top:20px;
-      height:calc(100vh - 40px);
+      align-self:start;
+      min-height:0;
+      max-height:calc(100vh - 40px);
       padding:22px;
       border-radius:var(--radius-xl);
       border:1px solid var(--line);
@@ -66,6 +75,7 @@
       display:flex;
       flex-direction:column;
       gap:14px;
+      overflow:auto;
     }
     .eyebrow{
       display:inline-flex;
@@ -98,6 +108,12 @@
       display:grid;
       gap:8px;
     }
+    .nav-parent{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) 46px;
+      gap:8px;
+      align-items:stretch;
+    }
     .nav-btn{
       width:100%;
       padding:18px;
@@ -119,6 +135,10 @@
     .nav-btn strong{font-size:16px; margin-bottom:8px}
     .nav-btn span{font-size:12px; color:var(--muted); line-height:1.7}
     .nav-btn.active span{color:#dceaff}
+    .nav-btn.primary{
+      height:100%;
+      min-height:88px;
+    }
     .nav-btn.sub{
       width:calc(100% - 18px);
       margin-left:18px;
@@ -128,9 +148,49 @@
     }
     .nav-btn.sub strong{font-size:14px; margin-bottom:6px}
     .nav-btn.sub span{font-size:11px}
-    .nav-group.open > .nav-btn:first-child{
+    .nav-group-toggle{
+      width:46px;
+      min-height:88px;
+      border:1px solid rgba(148,163,184,.12);
+      border-radius:16px;
+      background:rgba(255,255,255,.04);
+      color:#dceaff;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      transition:all .18s ease;
+      position:relative;
+      overflow:hidden;
+    }
+    .nav-group-toggle::before{
+      content:"";
+      width:10px;
+      height:10px;
+      border-right:2px solid currentColor;
+      border-bottom:2px solid currentColor;
+      transform:rotate(45deg);
+      margin-top:-4px;
+      transition:transform .18s ease, margin .18s ease;
+    }
+    .nav-group-toggle:hover{
+      border-color:rgba(86,167,255,.52);
+      background:rgba(86,167,255,.14);
+    }
+    .nav-group.open .nav-group-toggle{
+      border-color:rgba(86,167,255,.52);
+      background:linear-gradient(180deg, rgba(86,167,255,.18), rgba(255,255,255,.04));
+    }
+    .nav-group.open .nav-group-toggle::before{
+      transform:rotate(225deg);
+      margin-top:4px;
+    }
+    .nav-group.open .nav-btn.primary{
       border-color:rgba(86,167,255,.52);
       background:linear-gradient(135deg, rgba(86,167,255,.12), rgba(19,29,42,.92));
+    }
+    .nav-group:not(.open) .nav-btn.sub{
+      display:none;
     }
 
     .content{display:grid; gap:20px; align-content:start}
@@ -578,9 +638,65 @@
 
     .spec-toggle{
       position:fixed;
-      right:22px;
-      bottom:22px;
-      z-index:50;
+      top:50%;
+      right:18px;
+      z-index:55;
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      min-width:138px;
+      height:54px;
+      padding:0 18px 0 16px;
+      border:none;
+      border-radius:18px 0 0 18px;
+      background:linear-gradient(135deg, rgba(41,107,188,.96), rgba(25,66,118,.96));
+      color:#eef5ff;
+      box-shadow:0 18px 42px rgba(3,12,24,.34);
+      cursor:pointer;
+      transform:translateY(-50%);
+      transition:right .22s ease, transform .18s ease, box-shadow .18s ease, background .18s ease;
+    }
+    .spec-toggle:hover{
+      transform:translateY(-50%) translateX(-2px);
+      box-shadow:0 24px 48px rgba(3,12,24,.4);
+      background:linear-gradient(135deg, rgba(56,128,217,.98), rgba(29,82,150,.96));
+    }
+    .spec-toggle.expanded{
+      right:calc(min(420px, calc(100vw - 40px)) - 1px);
+      border-radius:18px 0 0 18px;
+    }
+    .spec-toggle__icon{
+      width:18px;
+      height:18px;
+      position:relative;
+      flex:0 0 auto;
+    }
+    .spec-toggle__icon::before{
+      content:"";
+      position:absolute;
+      inset:4px 6px 4px 2px;
+      border-left:2px solid currentColor;
+      border-bottom:2px solid currentColor;
+      transform:rotate(45deg);
+      transition:transform .18s ease;
+    }
+    .spec-toggle.expanded .spec-toggle__icon::before{
+      transform:rotate(225deg);
+    }
+    .spec-toggle__text{
+      display:flex;
+      flex-direction:column;
+      align-items:flex-start;
+      gap:2px;
+      line-height:1.2;
+    }
+    .spec-toggle__text strong{
+      font-size:14px;
+      font-weight:700;
+    }
+    .spec-toggle__text span{
+      font-size:11px;
+      color:rgba(238,245,255,.82);
     }
     .spec-sidebar{
       position:fixed;
@@ -597,7 +713,7 @@
       z-index:40;
       overflow:auto;
     }
-    .spec-sidebar.collapsed{transform:translateX(calc(100% - 44px))}
+    .spec-sidebar.collapsed{transform:translateX(100%)}
     .spec-sidebar h3{margin:0 0 12px; font-size:16px}
     .spec-card{
       padding:14px 14px;
@@ -757,6 +873,7 @@
 
     @media (max-width: 1100px){
       .app-shell{grid-template-columns:1fr}
+      body.spec-open .app-shell{width:min(1500px, calc(100vw - 40px)); margin:20px auto}
       .sidebar{position:relative; height:auto}
       .overview-grid{grid-template-columns:repeat(2, minmax(0,1fr))}
       .field-grid{grid-template-columns:repeat(2, minmax(0,1fr))}
@@ -766,6 +883,9 @@
       .pc-hero{flex-direction:column}
       .pc-hero-actions{align-items:flex-start; min-width:0}
       .pc-hero-tip{text-align:left}
+      .spec-toggle{top:auto; bottom:18px; transform:none; border-radius:16px; right:18px}
+      .spec-toggle:hover{transform:translateX(-2px)}
+      .spec-toggle.expanded{right:18px; border-radius:16px}
     }
     @media (max-width: 640px){
       .overview-grid{grid-template-columns:1fr}
@@ -774,6 +894,10 @@
       .modal-grid{grid-template-columns:1fr}
       .inline-input{grid-template-columns:1fr}
       .pc-kpi-strip{grid-template-columns:1fr}
+      .nav-parent{grid-template-columns:minmax(0,1fr) 42px}
+      .nav-group-toggle{min-height:82px; width:42px}
+      .spec-toggle{min-width:118px; padding:0 14px}
+      .spec-toggle__text span{display:none}
     }
   </style>
 </head>
@@ -785,11 +909,14 @@
       <p>单文件 HTML 原型：包含币对配置、配置编辑页面、币对持仓用户、减仓列表、ADL当前用户列表、用户详情。可本地直接打开并演示筛选、分页与页面切换。</p>
 
       <div class="nav-list">
-        <div class="nav-group" data-group="pair-config">
-          <button class="nav-btn active" data-page="pair-config">
-            <strong>币对配置</strong>
-            <span>配置触发阈值与统计周期</span>
-          </button>
+        <div class="nav-group" data-group="pair-config" data-pages="pair-config,config-editor">
+          <div class="nav-parent">
+            <button class="nav-btn primary active" data-page="pair-config">
+              <strong>币对配置</strong>
+              <span>配置触发阈值与统计周期</span>
+            </button>
+            <button type="button" class="nav-group-toggle" data-group-toggle="pair-config" aria-label="展开或收回币对配置导航"></button>
+          </div>
           <button class="nav-btn sub" data-page="config-editor">
             <strong>配置编辑</strong>
             <span>独立页面编辑币对配置</span>
@@ -968,16 +1095,6 @@
                 <label class="radio"><input type="radio" name="cm-cycle" value="total" />总</label>
               </div>
               <div class="hint">选择重置周期为 ADL 统计的周期维度，系统可按周期重置累计盈亏与触发次数等统计。</div>
-            </div>
-            <div class="modal-kpis">
-              <div class="kpi">
-                <small>当前风控率</small>
-                <strong id="cm-risk-rate" class="text-danger">--</strong>
-              </div>
-              <div class="kpi">
-                <small>预计收益</small>
-                <strong id="cm-est-profit" class="text-ok">--</strong>
-              </div>
             </div>
           </div>
 
@@ -1268,7 +1385,13 @@
     </main>
   </div>
 
-  <button type="button" class="button secondary spec-toggle" id="spec-toggle">展开口径定义文档</button>
+  <button type="button" class="spec-toggle" id="spec-toggle" aria-label="展开或收回口径定义">
+    <span class="spec-toggle__icon" aria-hidden="true"></span>
+    <span class="spec-toggle__text">
+      <strong>口径定义</strong>
+      <span>点击展开</span>
+    </span>
+  </button>
   <aside class="spec-sidebar collapsed" id="spec-sidebar">
     <h3>口径说明</h3>
     <div class="spec-card">
@@ -1283,6 +1406,15 @@
         <li>当前多仓亏损与当前空仓亏损为展示字段，不在前端配置页录入，统一以后端风险结果返回为准。</li>
         <li>ADL 触发时，系统先比较当前多仓亏损与当前空仓亏损的绝对值，亏损更高的方向优先执行自动 ADL。</li>
         <li>每完成一个用户在当前币对、当前方向下的全部持仓 ADL 后，系统需要基于最新亏损数据重新比较多空方向风险，并重新判断下一次 ADL 应处理的方向与用户。</li>
+      </ol>
+    </div>
+    <div class="spec-card">
+      <strong>ADL 单次盈亏统一公式总表</strong>
+      <ol>
+        <li>本系统所有涉及 ADL 减仓盈亏的字段，单次计算口径统一为：空仓 =（ADL时实时价 - 强平价）× 平仓数量；多仓 =（强平价 - ADL时实时价）× 平仓数量。</li>
+        <li>适用字段（包括但不限于）：「平仓后用户盈亏显示」、「减仓已实现盈亏」、「此次减仓盈亏」、「减仓盈亏(USDT)」、「成交盈亏(USDT)」、「ADL盈余总盈亏(USDT)」、「用户ADL总盈亏」、「用户已实现盈利总额」。</li>
+        <li>术语映射：强平价 = 当前持仓的破产价格；ADL时实时价 = 该次 ADL 执行时的当前市价 / 减仓时实时价格 / 标记价格；平仓数量 = 该次减仓数量 / 平仓数量 / 成交数量。</li>
+        <li>累计口径：凡字段名称含"总额 / 总盈亏 / 已实现"字样的，一律为该统计范围内所有历史 ADL 单次盈亏结果的代数和；大于 0 表示盈利，小于 0 表示亏损。</li>
       </ol>
     </div>
     <div class="spec-card">
@@ -1301,7 +1433,7 @@
         <li>“日”表示按当日自然日汇总顶部统计数据；“周”表示按当前自然周汇总；“月”表示按当前自然月汇总；“总”表示按系统当前可统计全量周期汇总。</li>
         <li>该切换项统一作用于顶部数据概览卡片。</li>
         <li>顶部新增“顶部统计币对”筛选，默认“全部”；选择具体币对后，顶部“减仓次数”和“用户ADL总盈亏”均按所选币对联动刷新。</li>
-        <li>减仓次数 = 当前筛选范围内用户减仓次数字段 `adlUsers.reduceTimes` 汇总结果；用户ADL总盈亏 = 当前筛选范围内 `adlUsers.realizedPnl` 汇总结果。</li>
+        <li>减仓次数 = 当前筛选范围内用户减仓次数字段 `adlUsers.reduceTimes` 汇总结果；用户ADL总盈亏 = 当前筛选范围内 `adlUsers.realizedPnl` 汇总结果；其中 `adlUsers.realizedPnl` 与「减仓已实现盈亏」「ADL盈余总盈亏」「用户详情·减仓盈亏」使用统一单次公式：空仓 =（ADL时实时价 - 强平价）× 平仓数量；多仓 =（强平价 - ADL时实时价）× 平仓数量。</li>
         <li>列表是否联动统计维度，以各列表自身口径定义为准，不因顶部切换自动改变字段结构。</li>
       </ol>
     </div>
@@ -1312,6 +1444,15 @@
         <li>百分比类输入项统一按百分比口径录入，默认支持最多 2 位小数。</li>
         <li>币对价格、持仓数量、标记价格、当前价、开仓均价等行情与数量类字段，以后端币对配置和后端返回参数为准。</li>
         <li>谷歌验证码统一为 6 位纯数字；长度不足 6 位、包含非数字字符或为空，均视为不合法输入。</li>
+      </ol>
+    </div>
+    <div class="spec-card">
+      <strong>导航与口径抽屉交互</strong>
+      <ol>
+        <li>一级导航支持通过右侧箭头独立展开或收回，当前激活的二级页面所属导航组默认保持展开。</li>
+        <li>左侧导航栏宽度按按钮内容与屏幕宽度动态适配；导航项变长时优先增高，避免文字拥挤截断。</li>
+        <li>右侧“口径定义”按钮固定悬浮在页面右侧外缘，默认可点击；收回状态下显示“点击展开”，展开状态下显示“点击收回”。</li>
+        <li>口径抽屉展开后，主内容区域自动为右侧抽屉预留可视空间；在窄屏场景下退化为抽屉覆盖，不强行压缩主内容。</li>
       </ol>
     </div>
 
@@ -1364,8 +1505,10 @@
         <strong>已ADL减仓次数 / ADL盈余总盈亏(USDT)</strong>
         <ol>
           <li>已ADL减仓次数：表示该交易对在当前统计周期内已触发的 ADL 减仓总次数，展示为整数。</li>
-          <li>ADL盈余总盈亏(USDT)：表示该交易对在当前统计周期内因 ADL 减仓累计产生的盈亏结果。</li>
+          <li>ADL盈余总盈亏(USDT)：表示该交易对在当前统计周期内因 ADL 减仓累计产生的盈亏结果，累计口径与减仓列表「减仓已实现盈亏」、用户详情「减仓盈亏」完全一致。</li>
           <li>ADL盈余总盈亏大于 0 表示平台侧盈余，小于 0 表示平台侧亏损。</li>
+          <li>单次 ADL 盈亏计算公式：空仓 =（ADL时实时价 - 强平价）× 平仓数量；多仓 =（强平价 - ADL时实时价）× 平仓数量。</li>
+          <li>ADL盈余总盈亏 = 该交易对在当前统计周期内所有历史 ADL 单次盈亏结果的代数和。</li>
         </ol>
       </div>
       <div class="spec-card">
@@ -1424,7 +1567,7 @@
         <strong>配置编辑页面</strong>
         <ol>
           <li>本页为独立配置编辑页面，不使用弹窗。</li>
-          <li>本页展示完整配置字段、风险参考说明、风控率与预计收益参考值。</li>
+          <li>本页展示完整配置字段、风险参考说明。</li>
           <li>本页用于承载长字段和多参数录入场景。</li>
         </ol>
       </div>
@@ -1477,10 +1620,8 @@
         </ol>
       </div>
       <div class="spec-card">
-        <strong>当前风控率 / 预计收益 / 重置</strong>
+        <strong>重置</strong>
         <ol>
-          <li>当前风控率：表示根据当前配置值计算出的风险参考比例，最多支持 2 位小数。</li>
-          <li>预计收益：表示基于当前配置值推导的参考收益金额，单位为 USDT，最多展示 8 位小数。</li>
           <li>点击“重置”后，当前编辑表单恢复为本次进入页面时的原始配置值，不保存未确认修改。</li>
         </ol>
       </div>
@@ -1583,7 +1724,7 @@
           <li>弹窗字段包含：破产价、当前价、持仓数量、持仓方向、持仓均价、平仓数量、平仓后用户盈亏显示、谷歌验证码、确认、取消。</li>
           <li>破产价为可输入字段；其余展示字段按当前持仓数据回填。</li>
           <li>当前价、持仓数量、持仓方向、持仓均价以后端币对配置与后端持仓结果为准。</li>
-          <li>平仓后用户盈亏显示实时联动计算：多仓按（破产价 - 持仓均价）× 平仓数量；空仓按（持仓均价 - 破产价）× 平仓数量。</li>
+          <li>平仓后用户盈亏显示实时联动计算：空仓按（当前价 - 破产价）× 平仓数量；多仓按（破产价 - 当前价）× 平仓数量。当前价即为 ADL时实时价，破产价即为强平价。</li>
           <li>若当前持仓存在挂单，且剩余可平部分小于“持仓数量 × 币对配置中的单次减仓比例”对应结果，则手动ADL确认时需先撤销该用户挂单，再继续执行ADL。</li>
           <li>若当前持仓状态为“已完成”，则前端直接提示“此持仓状态为已完成，不可ADL”，不再打开或执行手动ADL。</li>
           <li>确认成功后，更新持仓用户列表、减仓列表、ADL当前用户列表和用户详情演示数据。</li>
@@ -1606,7 +1747,7 @@
           <li>持仓数量：表示当前用户在该币对下的可减仓持仓数量，以后端持仓结果为准。</li>
           <li>持仓方向：取值为“多仓 / 空仓”。</li>
           <li>持仓均价：表示当前持仓的开仓均价。</li>
-          <li>平仓后用户盈亏显示：表示按当前输入的破产价、平仓数量、持仓方向、持仓均价计算出的本次减仓盈亏结果，金额最多展示 8 位小数。</li>
+          <li>平仓后用户盈亏显示：表示按当前输入的破产价（强平价）、当前价（ADL时实时价）、平仓数量、持仓方向计算出的本次减仓盈亏结果，公式：空仓 =（当前价 - 破产价）× 平仓数量；多仓 =（破产价 - 当前价）× 平仓数量；金额最多展示 8 位小数。</li>
           <li>错误提示区域：用于展示验证码不合法、平仓数量超限或必填项为空等校验失败原因。</li>
         </ol>
       </div>
@@ -1692,7 +1833,7 @@
           <li>减仓前用户未实现盈亏：表示该次 ADL 触发前，用户在该持仓上的未实现盈亏金额，单位为 USDT。</li>
           <li>减仓前盈利率 = 减仓前用户未实现盈亏 ÷ 减仓前持仓数量 × 100%。</li>
           <li>此次减仓盈利率 = 此次减仓盈亏 ÷ 此次减仓数量 × 100%。</li>
-          <li>此次减仓盈亏的计算方向与手动ADL减仓弹窗保持一致：多仓按（减仓时价格 - 持仓均价）× 此次减仓数量，空仓按（持仓均价 - 减仓时价格）× 此次减仓数量。</li>
+          <li>此次减仓盈亏的计算公式：空仓 =（ADL时实时价 - 强平价）× 平仓数量，多仓 =（强平价 - ADL时实时价）× 平仓数量；与「减仓已实现盈亏」单次计算口径完全一致。</li>
           <li>减仓列表优先展示最新一笔减仓订单记录中的上述三个值；若订单明细不存在，则可按当前用户汇总持仓数据回退计算展示。</li>
         </ol>
       </div>
@@ -1701,6 +1842,9 @@
         <ol>
           <li>该字段表示该用户在该交易对下因 ADL 减仓产生的累计已实现盈亏。</li>
           <li>大于 0 表示盈利，小于 0 表示亏损。</li>
+          <li>单次减仓已实现盈亏计算公式：空仓 =（ADL时实时价 - 强平价）× 平仓数量；多仓 =（强平价 - ADL时实时价）× 平仓数量。</li>
+          <li>强平价即 ADL 触发时该持仓方向下的破产价格；ADL时实时价即 ADL 执行当时的市场参考价格。</li>
+          <li>累计已实现盈亏为该用户在该交易对下所有历史 ADL 减仓单次已实现盈亏的代数和。</li>
         </ol>
       </div>
       <div class="spec-card">
@@ -1741,7 +1885,7 @@
           <li>当前持仓总额：表示该用户当前所有币对、所有方向持仓的名义价值总和，单位为 USDT。</li>
           <li>持仓未实现盈利总额：表示该用户当前所有持仓未实现盈亏的汇总结果，单位为 USDT。</li>
           <li>用户历史持仓数：表示该用户历史上出现过持仓或发生过 ADL 记录的交易对数量，按去重后的交易对数统计。</li>
-          <li>用户已实现盈利总额：表示该用户历史 ADL 已实现盈亏的累计结果，单位为 USDT。</li>
+          <li>用户已实现盈利总额：表示该用户历史 ADL 已实现盈亏的累计结果，单位为 USDT；单次 ADL 已实现盈亏口径统一为：空仓 =（ADL时实时价 - 强平价）× 平仓数量；多仓 =（强平价 - ADL时实时价）× 平仓数量。</li>
         </ol>
       </div>
       <div class="spec-card">
@@ -1783,7 +1927,7 @@
           <li>当前持仓总额：表示该用户当前所有持仓价值总和，单位为 USDT。</li>
           <li>持仓未实现盈利总额：表示该用户当前所有持仓未实现盈亏汇总结果，单位为 USDT。</li>
           <li>用户历史持仓数：表示该用户历史上出现过持仓或发生过 ADL 的交易对数量。</li>
-          <li>用户已实现盈利总额：表示该用户按顶部当前统计维度汇总得到的 ADL 已实现盈亏金额。</li>
+          <li>用户已实现盈利总额：表示该用户按顶部当前统计维度汇总得到的 ADL 已实现盈亏金额；单次 ADL 已实现盈亏口径统一为：空仓 =（ADL时实时价 - 强平价）× 平仓数量；多仓 =（强平价 - ADL时实时价）× 平仓数量。</li>
           <li>最近更新时间：表示当前统计维度或当前持仓数据内最近一次更新时间，格式为 `YYYY-MM-DD HH:mm:ss`。</li>
           <li>若顶部切换统计维度，则上述用户统计字段同步切换到对应周期口径。</li>
         </ol>
@@ -1816,7 +1960,7 @@
           <li>减仓前用户未实现盈亏表示该笔订单触发前，用户在该持仓上的未实现盈亏金额。</li>
           <li>减仓前盈利率 = 减仓前用户未实现盈亏 ÷ 减仓前持仓数量 × 100%。</li>
           <li>此次减仓盈利率 = 此次减仓盈亏 ÷ 此次减仓数量 × 100%。</li>
-          <li>此次减仓盈亏计算方向与手动ADL减仓弹窗一致：多仓按（减仓时价格 - 持仓均价）× 此次减仓数量；空仓按（持仓均价 - 减仓时价格）× 此次减仓数量。</li>
+          <li>此次减仓盈亏即为订单记录中的「减仓盈亏(USDT)」，计算公式：空仓 =（ADL时实时价 - 强平价）× 平仓数量；多仓 =（强平价 - ADL时实时价）× 平仓数量；与全局单次减仓已实现盈亏、平仓后用户盈亏显示一致。</li>
           <li>订单记录默认按减仓时间倒序排列。</li>
           <li>涉及盈亏金额与盈利率展示时，最多保留 8 位小数，末尾为 0 的小数位不展示。</li>
         </ol>
@@ -1826,6 +1970,7 @@
         <ol>
           <li>成交记录展示字段：成交ID、订单ID、交易对、成交时间、成交数量(USDT)、成交价格、成交金额(USDT)、手续费(USDT)、成交盈亏(USDT)。</li>
           <li>成交价格、成交数量、成交金额以后端成交回报为准。</li>
+          <li>成交盈亏(USDT) 表示该笔成交落库时的单次减仓盈亏结果，计算公式与全局一致：空仓 =（ADL时实时价 - 强平价）× 平仓数量；多仓 =（强平价 - ADL时实时价）× 平仓数量。</li>
           <li>涉及盈亏与金额字段时，最多保留 8 位小数，末尾为 0 的小数位不展示。</li>
         </ol>
       </div>
@@ -1915,7 +2060,7 @@
             <input id="mam-close-qty" type="number" min="0" step="0.01" />
           </div>
         </div>
-        <div class="hint">平仓数量默认按 USDT 口径输入，平仓数量不能大于当前持仓数量。平仓后用户盈亏显示按持仓方向计算：多仓按（破产价 - 持仓均价）× 平仓数量计算，空仓按（持仓均价 - 破产价）× 平仓数量计算。</div>
+        <div class="hint">平仓数量默认按 USDT 口径输入，平仓数量不能大于当前持仓数量。平仓后用户盈亏显示按持仓方向计算：空仓按（当前价 - 破产价）× 平仓数量计算，多仓按（破产价 - 当前价）× 平仓数量计算。当前价即为ADL时实时价，破产价即为强平价。</div>
         <div class="modal-field">
           <label for="mam-after-pnl">平仓后用户盈亏显示</label>
           <input id="mam-after-pnl" type="text" readonly />
@@ -1960,10 +2105,12 @@
     (function () {
       const navButtons = Array.from(document.querySelectorAll('.nav-btn'));
       const navGroups = Array.from(document.querySelectorAll('.nav-group'));
+      const navGroupToggles = Array.from(document.querySelectorAll('.nav-group-toggle'));
       const pages = Array.from(document.querySelectorAll('.page'));
       const specPages = Array.from(document.querySelectorAll('.spec-page'));
       const specSidebar = document.getElementById('spec-sidebar');
       const specToggle = document.getElementById('spec-toggle');
+      const specToggleHint = specToggle.querySelector('.spec-toggle__text span');
       const overviewTitle = document.getElementById('overview-title');
       const overviewGrid = document.getElementById('overview-grid');
       const overviewPairFilter = document.getElementById('overview-pair-filter');
@@ -2039,8 +2186,6 @@
       const cmSingleReduceMode = document.getElementById('cm-single-reduce-mode');
       const cmSingleReduceRatioWrap = document.getElementById('cm-single-reduce-ratio-wrap');
       const cmSingleReduceRatio = document.getElementById('cm-single-reduce-ratio');
-      const cmRiskRate = document.getElementById('cm-risk-rate');
-      const cmEstProfit = document.getElementById('cm-est-profit');
       const cmReset = document.getElementById('cm-reset');
       const cmSave = document.getElementById('cm-save');
       const cmTitle = document.getElementById('cm-title');
@@ -2082,11 +2227,13 @@
         acuPage: 1,
         adPage: 1,
         adTab: 'orders',
+        activePage: 'pair-config',
         activeUserKey: '',
         activeDetailUserId: '',
         activeDetailSource: 'adl-list',
         activePair: 'BTC/USDT',
-        activeManualKey: ''
+        activeManualKey: '',
+        navOpenGroups: { 'pair-config': true }
       };
 
       const pairUniverse = ['BTC/USDT', 'ETH/USDT', 'BNB/USDT', 'SOL/USDT', 'XRP/USDT', 'DOGE/USDT', 'SUI/USDT', 'AVAX/USDT', 'ADA/USDT', 'LINK/USDT', 'TON/USDT', 'TRX/USDT'];
@@ -2432,18 +2579,33 @@
         });
       }
 
+      function getGroupPages(group) {
+        const raw = group.dataset.pages || group.dataset.group || '';
+        return raw.split(',').map(function (item) { return item.trim(); }).filter(Boolean);
+      }
+
+      function syncNavGroups(activePageId) {
+        navGroups.forEach(function (group) {
+          const groupKey = group.dataset.group;
+          const pagesInGroup = getGroupPages(group);
+          const hasActiveSubPage = pagesInGroup.indexOf(activePageId) > -1 && activePageId !== groupKey;
+          const opened = hasActiveSubPage ? true : !!state.navOpenGroups[groupKey];
+          group.classList.toggle('open', opened);
+        });
+      }
+
       function setSpecCollapsed(collapsed) {
+        document.body.classList.toggle('spec-open', !collapsed);
         specSidebar.classList.toggle('collapsed', collapsed);
-        specToggle.textContent = collapsed ? '展开口径定义文档' : '收回口径';
+        specToggle.classList.toggle('expanded', !collapsed);
+        specToggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+        specToggleHint.textContent = collapsed ? '点击展开' : '点击收回';
       }
 
       function activate(pageId) {
+        state.activePage = pageId;
         navButtons.forEach(function (btn) { btn.classList.toggle('active', btn.dataset.page === pageId); });
-        navGroups.forEach(function (group) {
-          const groupKey = group.dataset.group;
-          const opened = groupKey === pageId || (groupKey === 'pair-config' && pageId === 'config-editor');
-          group.classList.toggle('open', opened);
-        });
+        syncNavGroups(pageId);
         pages.forEach(function (page) { page.classList.toggle('active', page.id === pageId); });
         specPages.forEach(function (page) { page.classList.toggle('active', page.dataset.specPage === pageId); });
         if (pageId === 'pair-config') overviewTitle.textContent = 'ADL（自动减仓）币对配置';
@@ -3161,13 +3323,6 @@
         return fmtNum(rate) + '%';
       }
 
-      function calcEstProfit(pnl, rate) {
-        const base = Number(pnl) || 0;
-        const r = Number(rate) || 0;
-        const est = Math.max(0, base * (0.35 + (r / 200)));
-        return '+' + fmtNum(est) + ' USDT';
-      }
-
       function openStatusResult(pair) {
         const current = pairConfigs.find(function (c) { return c.pair === pair; });
         if (!current) return;
@@ -3219,15 +3374,15 @@
         return Math.max(0, entry * (1 - 1 / leverage));
       }
 
-      function calcManualAfterPnl(position, bankruptcyPrice, closeQty) {
+      function calcManualAfterPnl(position, bankruptcyPrice, closeQty, adlMarkPrice) {
         if (!position) return 0;
-        const entryPrice = Number(position.entryPrice) || 0;
         const qty = Math.max(0, Number(closeQty) || 0);
         const bankruptcy = Math.max(0, Number(bankruptcyPrice) || 0);
-        if (qty <= 0 || bankruptcy <= 0) return 0;
+        const mark = Number(adlMarkPrice != null ? adlMarkPrice : (position ? position.markPrice : 0)) || 0;
+        if (qty <= 0 || bankruptcy <= 0 || mark <= 0) return 0;
         const delta = position.side === '空仓'
-          ? (entryPrice - bankruptcy)
-          : (bankruptcy - entryPrice);
+          ? (mark - bankruptcy)
+          : (bankruptcy - mark);
         return qty * delta;
       }
 
@@ -3329,7 +3484,7 @@
 
       function refreshManualAfterPnl() {
         const position = getPositionByKey(state.activeManualKey);
-        const closePnl = calcManualAfterPnl(position, mamBankruptcy.value, mamCloseQty.value);
+        const closePnl = calcManualAfterPnl(position, mamBankruptcy.value, mamCloseQty.value, mamCurrentPrice.value);
         mamAfterPnl.value = fmtSigned(closePnl) + ' USDT';
       }
 
@@ -3394,7 +3549,7 @@
           return;
         }
 
-        const realized = calcManualAfterPnl(position, bankruptcyPrice, closeQty);
+        const realized = calcManualAfterPnl(position, bankruptcyPrice, closeQty, mamCurrentPrice.value);
         const reduceRatio = totalQty <= 0 ? 0 : Math.round((closeQty / totalQty) * 100);
         const riskRate = totalQty <= 0 ? 0 : Math.round((Math.abs(realized) / totalQty) * 100);
         const doneAt = nowStr();
@@ -3526,12 +3681,6 @@
         Array.from(cmCycleGroup.querySelectorAll('input[name="cm-cycle"]')).forEach(function (r) {
           r.checked = r.value === initCycle;
         });
-        const risk = calcRiskRate(initMaxLoss, initLongLoss, initShortLoss);
-        cmRiskRate.textContent = risk;
-        const rnum = Number(String(risk).replace('%', ''));
-        cmRiskRate.className = rnum >= 85 ? 'text-danger' : (rnum >= 65 ? 'text-warn' : 'text-ok');
-        const est = calcEstProfit((current ? current.pnl : 14800), rnum);
-        cmEstProfit.textContent = est;
         activate('config-editor');
       }
 
@@ -3593,6 +3742,24 @@
 
       navButtons.forEach(function (btn) {
         btn.addEventListener('click', function () { activate(btn.dataset.page); });
+      });
+      navGroupToggles.forEach(function (toggle) {
+        toggle.addEventListener('click', function (event) {
+          event.stopPropagation();
+          const groupKey = toggle.dataset.groupToggle;
+          const group = navGroups.find(function (item) { return item.dataset.group === groupKey; });
+          if (!group) return;
+          const willOpen = !group.classList.contains('open');
+          const pagesInGroup = getGroupPages(group);
+          const primaryPage = groupKey;
+          const activeInGroup = pagesInGroup.indexOf(state.activePage) > -1;
+          state.navOpenGroups[groupKey] = willOpen;
+          if (!willOpen && activeInGroup && state.activePage !== primaryPage) {
+            activate(primaryPage);
+            return;
+          }
+          syncNavGroups(state.activePage);
+        });
       });
       pills.forEach(function (p) {
         p.addEventListener('click', function () {
@@ -3688,17 +3855,7 @@
         cmSingleReduceMode.value = current && current.singleReduceMode ? current.singleReduceMode : 'all';
         cmSingleReduceRatio.value = current && Number.isFinite(Number(current.singleReduceRatio)) ? String(current.singleReduceRatio) : '';
         toggleSingleReduceRatioField();
-        const risk = calcRiskRate(maxLoss, currentLongLoss, currentShortLoss);
-        cmRiskRate.textContent = risk;
       });
-      function refreshConfigRiskRate() {
-        const current = pairConfigs.find(function (c) { return c.pair === cmPair.value; });
-        const risk = calcRiskRate(cmMaxLoss.value, current ? current.currentLongLoss : 0, current ? current.currentShortLoss : 0);
-        cmRiskRate.textContent = risk;
-        const rnum = Number(String(risk).replace('%', ''));
-        cmRiskRate.className = rnum >= 85 ? 'text-danger' : (rnum >= 65 ? 'text-warn' : 'text-ok');
-      }
-      cmMaxLoss.addEventListener('input', refreshConfigRiskRate);
       cmSingleReduceMode.addEventListener('change', toggleSingleReduceRatioField);
       overviewPairFilter.addEventListener('change', function () { renderOverview(); });
 
